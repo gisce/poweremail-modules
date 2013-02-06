@@ -8,7 +8,7 @@ class PoweremailMailbox(osv.osv):
 
     def create(self, cursor, uid, vals, context=None):
         import pdb; pdb.set_trace()
-        return super(GiscedataFacturacioFacturaLinia,
+        return super(PoweremailMailbox,
                      self).create(cursor, uid, values, context)
 
     def _get_models(self, cursor, uid, context={}):
