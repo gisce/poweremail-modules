@@ -8,7 +8,7 @@
   "depends": ['poweremail'],
   "init_xml": [],
   "demo_xml": [],
-  "update_xml": ['ir.model.access.csv'],
+  "update_xml": [],
   "active": False,
   "installable": True
 }
