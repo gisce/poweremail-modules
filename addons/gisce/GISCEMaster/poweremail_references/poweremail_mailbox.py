@@ -32,7 +32,7 @@ class PoweremailMailbox(osv.osv):
                 else:
                     getattr(src, self.callbacks[func])(cursor, uid,
                                                 ids_cbk[model], context)
-            except:
+            except AttributeError:
                 pass
 
     def create(self, cursor, uid, vals, context=None):
