@@ -22,10 +22,7 @@ class PoweremailMailbox(osv.osv):
             if not i['reference']:
                 continue
             ref = i['reference'].split(',')
-            if ref[0] in ids_cbk:
-                ids_cbk[ref[0]].append(ref[1])
-            else:
-                ids_cbk[ref[0]] = [ref[1]]
+            ids_cbk[ref[0]] = ids_cbk.get(ref[0], []) + [int(ref[1])]
         for model in ids_cbk:
             src = self.pool.get(model)
             try:
