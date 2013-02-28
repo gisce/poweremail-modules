@@ -53,7 +53,7 @@ class PoweremailMailbox(osv.osv):
         return ret
 
     def unlink(self, cursor, uid, ids, context=None):
-        self.poweremail_callback(cursor, uid, ids, 'unlink', context)
+        self.poweremail_callback(cursor, uid, ids, 'unlink', context=context)
         ret = super(PoweremailMailbox,
                      self).unlink(cursor, uid, ids, context)
         return ret
