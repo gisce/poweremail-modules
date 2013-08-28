@@ -36,6 +36,8 @@ class PoweremailMailbox(osv.osv):
                 pass
 
     def create(self, cursor, uid, vals, context=None):
+        if not context:
+            context = {}
         pe_id = super(PoweremailMailbox,
                      self).create(cursor, uid, vals, context)
         src_id = context.get('src_rec_id', False)
