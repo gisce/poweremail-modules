@@ -16,7 +16,7 @@ class PoweremailMailbox(osv.osv):
         if not isinstance(ids, (tuple, list)):
             ids = [ids]
         for mail_id in ids:
-            self.send_in_background(cursor, uid, mail_id, context)
+            self.send_in_background(cursor, uid, [mail_id], context)
         return True
 
 PoweremailMailbox()
