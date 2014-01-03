@@ -5,7 +5,7 @@
   "version": "0-dev",
   "author": "GISCE",
   "category": "GISCEMaster",
-  "depends": ['base', 'poweremail'],
+  "depends": ['base', 'poweremail', 'oorq'],
   "init_xml": [],
   "demo_xml": [],
   "update_xml": [],
