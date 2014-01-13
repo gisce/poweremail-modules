@@ -3,6 +3,7 @@ from itertools import chain
 from osv import osv
 from oorq.decorators import job
 from oorq.oorq import JobsPool
+from tools import config
 
 
 class PoweremailSendWizard(osv.osv_memory):
@@ -50,7 +51,7 @@ class PoweremailSendWizard(osv.osv_memory):
             res += res_job
         return res
 
-    @job(queue='poweremail')
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'))
     def save_to_mailbox_in_background(self, cursor, uid, context):
         if not context:
             context = {}
