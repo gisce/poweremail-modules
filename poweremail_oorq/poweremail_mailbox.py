@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from osv import osv
 from oorq.decorators import job
+from tools import config
 
 
 class PoweremailMailbox(osv.osv):
     _name = "poweremail.mailbox"
     _inherit = 'poweremail.mailbox'
 
-    @job(queue='poweremail')
+    @job(queue=config.get('poweremail_sender_queue', 'poweremail'))
     def send_in_background(self, cursor, uid, ids, context):
         return super(PoweremailMailbox,
                      self).send_this_mail(cursor, uid, ids, context)
