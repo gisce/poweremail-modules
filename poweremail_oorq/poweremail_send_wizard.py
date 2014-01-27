@@ -60,7 +60,9 @@ class PoweremailSendWizard(osv.osv_memory):
         if not screen_vals:
             raise Exception("No screen_vals found in the context!")
         wiz_id = self.create(cursor, uid, screen_vals, context)
-        return super(PoweremailSendWizard,
-                     self).save_to_mailbox(cursor, uid, [wiz_id], context)
+        mail_ids = super(PoweremailSendWizard,
+                         self).save_to_mailbox(cursor, uid, [wiz_id], context)
+        self.write(cursor, uid, mail_ids, {'folder': 'draft'})
+        return mail_ids
 
 PoweremailSendWizard()
