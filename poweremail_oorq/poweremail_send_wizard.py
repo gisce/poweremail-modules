@@ -53,16 +53,18 @@ class PoweremailSendWizard(osv.osv_memory):
 
     @job(queue=config.get('poweremail_render_queue', 'poweremail'))
     def save_to_mailbox_in_background(self, cursor, uid, context):
+        mailbox_obj = self.pool.get('poweremail.mailbox')
         if not context:
             context = {}
         screen_vals = context.get('screen_vals', {})
-        del context['screen_vals']
+        ctx = context.copy()
+        del ctx['screen_vals']
         if not screen_vals:
             raise Exception("No screen_vals found in the context!")
-        wiz_id = self.create(cursor, uid, screen_vals, context)
+        wiz_id = self.create(cursor, uid, screen_vals, ctx)
         mail_ids = super(PoweremailSendWizard,
-                         self).save_to_mailbox(cursor, uid, [wiz_id], context)
-        self.write(cursor, uid, mail_ids, {'folder': 'draft'})
+                         self).save_to_mailbox(cursor, uid, [wiz_id], ctx)
+        mailbox_obj.write(cursor, uid, mail_ids, {'folder': 'drafts'}, ctx)
         return mail_ids
 
 PoweremailSendWizard()
