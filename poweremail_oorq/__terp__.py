@@ -2,7 +2,7 @@
 {
   "name": "Poweremail OORQ",
   "description": """Poweremail using OORQ""",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": "GISCE",
   "category": "GISCEMaster",
   "depends": ['base', 'poweremail', 'oorq'],
