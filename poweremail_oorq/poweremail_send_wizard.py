@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from itertools import chain
 from osv import osv
+from rq import get_current_job
 from oorq.decorators import job
 from oorq.oorq import JobsPool
 from tools import config
@@ -11,6 +12,11 @@ class PoweremailSendWizard(osv.osv_memory):
     _inherit = 'poweremail.send.wizard'
 
     def save_to_mailbox(self, cursor, uid, ids, context=None):
+        if get_current_job():
+            return super(PoweremailSendWizard,
+                         self).save_to_mailbox(cursor, uid, ids,
+                                               context=context)
+
         fields = self.fields_get(cursor, uid, context=context).keys()
         wiz = self.read(cursor, uid, ids, [], context)[0]
         for k in wiz.keys():
@@ -23,6 +29,7 @@ class PoweremailSendWizard(osv.osv_memory):
         src_rec_ids = context.get('src_rec_ids', [])[:]
         len_src_rec_ids = len(src_rec_ids)
         new_rec_ids = []
+        
         # Due the original method only parse the templates if the len of
         # src_rec_ids is greater than 1 but we want to minimize the mails to
         # generate we make groups of two. [(1,2), (3,4), (5,6)]
