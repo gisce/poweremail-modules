@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	<data>
+		<record model="ir.ui.view" id="poweremail_template_access_form">
+            <field name="name">poweremail.templates.access.form</field>
+            <field name="model">poweremail.templates</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_template_form"/>
+            <field name="arch" type="xml">
+            	<field name="ref_ir_value" position="after">
+            		<field name="ref_ir_act_window_access"/>
+            		<field name="ref_ir_value_access"/>
+            		<button name="create_access_reference" string="Create Direct Access" type="object"/>
+            	</field>
+            </field>
+    	</record>
+	</data>
+</openerp>

@@ -2,3 +2,4 @@
 """poweremail reference
 """
 import poweremail_mailbox
+import poweremail_template
