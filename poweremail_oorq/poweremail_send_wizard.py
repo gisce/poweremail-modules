@@ -56,6 +56,9 @@ class PoweremailSendWizard(osv.osv_memory):
         j_pool.join()
         for res_job in j_pool.results.values():
             res += res_job
+        # Put the rendered mails on outbox
+        mailbox_obj = self.pool.get('poweremail.mailbox')
+        mailbox_obj.write(cursor, uid, res, {'folder': 'outbox'}, ctx)
         return res
 
     @job(queue=config.get('poweremail_render_queue', 'poweremail'))
