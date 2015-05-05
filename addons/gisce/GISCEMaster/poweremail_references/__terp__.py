@@ -2,7 +2,7 @@
 {
   "name": "Poweremail References",
   "description": """Poweremail References""",
-  "version": "2.51.4",
+  "version": "2.52.0",
   "author": "GISCE",
   "category": "GISCEMaster",
   "depends": ['poweremail'],
