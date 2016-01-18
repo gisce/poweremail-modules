@@ -14,29 +14,34 @@ class PoweremailMailbox(osv.osv):
     def poweremail_callback(self, cursor, uid, ids, func, vals=None, context=None):
         """Crida el callback callbacks[func] del reference de ids
         """
+        if context is None:
+            context = {}
         data = self.read(cursor, uid, ids, ['reference'])
         if not isinstance(data, list):
             data = [data]
         ids_cbk = {}
+        ctx = context.copy()
+        ctx['pe_callback_origin_ids'] = {}
         for i in data:
             if not i['reference']:
                 continue
             ref = i['reference'].split(',')
             ids_cbk[ref[0]] = ids_cbk.get(ref[0], []) + [int(ref[1])]
+            ctx['pe_callback_origin_ids'][int(ref[1])] = i['id']
         for model in ids_cbk:
             src = self.pool.get(model)
             try:
                 if vals:
                     getattr(src, self.callbacks[func])(cursor, uid,
-                                                ids_cbk[model], vals, context)
+                                                ids_cbk[model], vals, ctx)
                 else:
                     getattr(src, self.callbacks[func])(cursor, uid,
-                                                ids_cbk[model], context)
+                                                ids_cbk[model], ctx)
             except AttributeError:
                 pass
 
     def create(self, cursor, uid, vals, context=None):
-        if not context:
+        if context is None:
             context = {}
         pe_id = super(PoweremailMailbox,
                      self).create(cursor, uid, vals, context)
@@ -49,12 +54,16 @@ class PoweremailMailbox(osv.osv):
         return pe_id
 
     def write(self, cursor, uid, ids, vals, context=None):
+        if context is None:
+            context = {}
         self.poweremail_callback(cursor, uid, ids, 'write', vals, context)
         ret = super(PoweremailMailbox,
                      self).write(cursor, uid, ids, vals, context)
         return ret
 
     def unlink(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
         self.poweremail_callback(cursor, uid, ids, 'unlink', context=context)
         ret = super(PoweremailMailbox,
                      self).unlink(cursor, uid, ids, context)
