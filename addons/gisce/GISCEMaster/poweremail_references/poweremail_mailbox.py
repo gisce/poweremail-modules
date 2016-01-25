@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 
 from osv import osv, fields
 
@@ -98,6 +99,7 @@ class PoweremailMailbox(osv.osv):
     _columns = {
         'reference': fields.reference('Source Object', selection=_get_models,
                                       size=128),
+        'meta': fields.text('Meta information')
     }
 
 PoweremailMailbox()
