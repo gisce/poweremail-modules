@@ -8,7 +8,7 @@
   "depends": ['poweremail'],
   "init_xml": [],
   "demo_xml": [],
-  "update_xml": ['poweremail_template_view.xml'],
+  "update_xml": ['poweremail_template_view.xml', 'poweremail_mailbox_view.xml'],
   "active": False,
   "installable": True
 }
