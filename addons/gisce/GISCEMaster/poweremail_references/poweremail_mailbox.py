@@ -16,18 +16,33 @@ class PoweremailMailbox(osv.osv):
         """
         if context is None:
             context = {}
-        data = self.read(cursor, uid, ids, ['reference'])
+        data = self.read(cursor, uid, ids, ['reference', 'meta'])
         if not isinstance(data, list):
             data = [data]
         ids_cbk = {}
         ctx = context.copy()
         ctx['pe_callback_origin_ids'] = {}
+        ctx['meta'] = {}
+        if vals:
+            init_meta = vals.get('meta', {}) or {}
+            if isinstance(init_meta, basestring):
+                init_meta = json.loads(init_meta)
+        else:
+            init_meta = {}
         for i in data:
             if not i['reference']:
                 continue
+            meta_vals = i['meta']
+            if meta_vals:
+                meta = json.loads(meta_vals)
+                meta.update(init_meta)
+            else:
+                meta = {}
+
             ref = i['reference'].split(',')
             ids_cbk[ref[0]] = ids_cbk.get(ref[0], []) + [int(ref[1])]
             ctx['pe_callback_origin_ids'][int(ref[1])] = i['id']
+            ctx['meta'][int(ref[1])] = meta
         for model in ids_cbk:
             src = self.pool.get(model)
             try:
@@ -43,19 +58,26 @@ class PoweremailMailbox(osv.osv):
     def create(self, cursor, uid, vals, context=None):
         if context is None:
             context = {}
-        pe_id = super(PoweremailMailbox,
-                     self).create(cursor, uid, vals, context)
         src_id = context.get('src_rec_id', False)
         if src_id:
-            self.write(cursor, uid, pe_id,
-                    {'reference': '%s,%d' % (context['src_model'], src_id)})
-            self.poweremail_callback(cursor, uid, pe_id, 'create', vals,
-                                     context)
+            upd_vals = {
+                'reference': '%s,%d' % (context['src_model'], src_id)
+            }
+            meta = context.get('meta')
+            if meta:
+                upd_vals['meta'] = json.dumps(context['meta'])
+            vals.update(upd_vals)
+        pe_id = super(PoweremailMailbox,
+                      self).create(cursor, uid, vals, context)
+        self.poweremail_callback(cursor, uid, pe_id, 'create', vals, context)
         return pe_id
 
     def write(self, cursor, uid, ids, vals, context=None):
         if context is None:
             context = {}
+        meta = context.get('meta')
+        if meta:
+            vals['meta'] = json.dumps(meta)
         self.poweremail_callback(cursor, uid, ids, 'write', vals, context)
         ret = super(PoweremailMailbox,
                      self).write(cursor, uid, ids, vals, context)
