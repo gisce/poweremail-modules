@@ -8,9 +8,9 @@
             <field name="inherit_id" ref="poweremail.poweremail_template_form"/>
             <field name="arch" type="xml">
             	<field name="ref_ir_value" position="after">
-            		<field name="ref_ir_act_window_access"/>
-            		<field name="ref_ir_value_access"/>
-            		<button name="create_access_reference" string="Create Direct Access" type="object"/>
+					<field name="ref_ir_value_access" colspan="2"/>
+					<button name="create_access_reference" colspan="1" string="Create Direct Access" type="object"/>
+					<field name="ref_ir_act_window_access" colspan="2"/>
             	</field>
             </field>
     	</record>
