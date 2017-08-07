@@ -71,6 +71,10 @@ class PoweremailSendWizard(osv.osv_memory):
         del ctx['screen_vals']
         if not screen_vals:
             raise Exception("No screen_vals found in the context!")
+        attach_ids = screen_vals.get('attachment_ids', [])
+        if attach_ids:
+            screen_vals['attachment_ids'] = [(6, 0, attach_ids)]
+
         wiz_id = self.create(cursor, uid, screen_vals, ctx)
         mail_ids = super(PoweremailSendWizard,
                          self).save_to_mailbox(cursor, uid, [wiz_id], ctx)
