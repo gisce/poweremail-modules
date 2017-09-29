@@ -19,7 +19,10 @@ class PoweremailSendWizard(osv.osv_memory):
 
         fields = self.fields_get(cursor, uid, context=context).keys()
         wiz = self.read(cursor, uid, ids, [], context)[0]
+        def_fields = self.fields_get(cursor, uid)
         for k in wiz.keys():
+            if k in def_fields and def_fields[k]['type'].endswith('2many'):
+                wiz[k] = [[6, 0, wiz[k]]]
             if k not in fields:
                 del wiz[k]
         res = []
