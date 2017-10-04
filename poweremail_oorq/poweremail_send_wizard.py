@@ -3,7 +3,7 @@ from itertools import chain
 from osv import osv
 from rq import get_current_job
 from oorq.decorators import job
-from oorq.oorq import JobsPool
+from oorq.oorq import JobsPool, AsyncMode
 from tools import config
 
 
@@ -12,7 +12,7 @@ class PoweremailSendWizard(osv.osv_memory):
     _inherit = 'poweremail.send.wizard'
 
     def save_to_mailbox(self, cursor, uid, ids, context=None):
-        if get_current_job():
+        if get_current_job() or not AsyncMode.is_async():
             return super(PoweremailSendWizard,
                          self).save_to_mailbox(cursor, uid, ids,
                                                context=context)
