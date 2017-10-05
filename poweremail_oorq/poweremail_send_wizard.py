@@ -12,6 +12,8 @@ class PoweremailSendWizard(osv.osv_memory):
     _inherit = 'poweremail.send.wizard'
 
     def save_to_mailbox(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
         if get_current_job() or not AsyncMode.is_async():
             return super(PoweremailSendWizard,
                          self).save_to_mailbox(cursor, uid, ids,
@@ -19,7 +21,7 @@ class PoweremailSendWizard(osv.osv_memory):
 
         fields = self.fields_get(cursor, uid, context=context).keys()
         wiz = self.read(cursor, uid, ids, [], context)[0]
-        def_fields = self.fields_get(cursor, uid)
+        def_fields = self.fields_get(cursor, uid, context=context)
         for k in wiz.keys():
             if k in def_fields and def_fields[k]['type'].endswith('2many'):
                 wiz[k] = [[6, 0, wiz[k]]]
