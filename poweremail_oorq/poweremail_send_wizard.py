@@ -53,12 +53,13 @@ class PoweremailSendWizard(osv.osv_memory):
             j_pool.add_job(job)
             if 'screen_vals' in ctx:
                 del ctx['screen_vals']
-        j_pool.join()
-        for res_job in j_pool.results.values():
-            res += res_job
-        # Put the rendered mails on outbox
-        mailbox_obj = self.pool.get('poweremail.mailbox')
-        mailbox_obj.write(cursor, uid, res, {'folder': 'outbox'}, ctx)
+        if not(context.get('save_async', False)):
+            j_pool.join()
+            for res_job in j_pool.results.values():
+                res += res_job
+            # Put the rendered mails on outbox
+            mailbox_obj = self.pool.get('poweremail.mailbox')
+            mailbox_obj.write(cursor, uid, res, {'folder': 'outbox'}, ctx)
         return res
 
     @job(queue=config.get('poweremail_render_queue', 'poweremail'))
@@ -74,7 +75,8 @@ class PoweremailSendWizard(osv.osv_memory):
         wiz_id = self.create(cursor, uid, screen_vals, ctx)
         mail_ids = super(PoweremailSendWizard,
                          self).save_to_mailbox(cursor, uid, [wiz_id], ctx)
-        mailbox_obj.write(cursor, uid, mail_ids, {'folder': 'drafts'}, ctx)
+        if not(context.get('save_async', False)):
+            mailbox_obj.write(cursor, uid, mail_ids, {'folder': 'drafts'}, ctx)
         return mail_ids
 
 PoweremailSendWizard()
