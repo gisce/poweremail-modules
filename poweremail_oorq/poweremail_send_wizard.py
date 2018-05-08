@@ -3,7 +3,7 @@ from itertools import chain
 from osv import osv
 from rq import get_current_job
 from oorq.decorators import job
-from oorq.oorq import JobsPool
+from oorq.oorq import JobsPool, AsyncMode
 from tools import config
 
 
@@ -12,14 +12,19 @@ class PoweremailSendWizard(osv.osv_memory):
     _inherit = 'poweremail.send.wizard'
 
     def save_to_mailbox(self, cursor, uid, ids, context=None):
-        if get_current_job():
+        if context is None:
+            context = {}
+        if get_current_job() or not AsyncMode.is_async():
             return super(PoweremailSendWizard,
                          self).save_to_mailbox(cursor, uid, ids,
                                                context=context)
 
         fields = self.fields_get(cursor, uid, context=context).keys()
         wiz = self.read(cursor, uid, ids, [], context)[0]
+        def_fields = self.fields_get(cursor, uid, context=context)
         for k in wiz.keys():
+            if k in def_fields and def_fields[k]['type'].endswith('2many'):
+                wiz[k] = [[6, 0, wiz[k]]]
             if k not in fields:
                 del wiz[k]
         res = []
@@ -72,6 +77,7 @@ class PoweremailSendWizard(osv.osv_memory):
         del ctx['screen_vals']
         if not screen_vals:
             raise Exception("No screen_vals found in the context!")
+
         wiz_id = self.create(cursor, uid, screen_vals, ctx)
         mail_ids = super(PoweremailSendWizard,
                          self).save_to_mailbox(cursor, uid, [wiz_id], ctx)
