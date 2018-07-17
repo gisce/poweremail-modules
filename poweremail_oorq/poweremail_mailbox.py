@@ -13,11 +13,20 @@ class PoweremailMailbox(osv.osv):
         return super(PoweremailMailbox,
                      self).send_this_mail(cursor, uid, ids, context)
 
+    @job(queue=config.get('poweremail_sender_queue', 'poweremail'), at_front=True)
+    def send_in_background_at_front(self, cursor, uid, ids, context):
+        return super(PoweremailMailbox,
+                     self).send_this_mail(cursor, uid, ids, context)
+
     def send_this_mail(self, cursor, uid, ids=None, context=None):
         if not isinstance(ids, (tuple, list)):
             ids = [ids]
-        for mail_id in ids:
-            self.send_in_background(cursor, uid, [mail_id], context)
+        for mail in self.read(cursor, uid, ids, ['priority']):
+            if mail['priority'] == '2':
+                method = getattr(self, 'send_in_background_at_front')
+            else:
+                method = getattr(self, 'send_in_background')
+            method(cursor, uid, [mail['id']], context)
         return True
 
 PoweremailMailbox()
