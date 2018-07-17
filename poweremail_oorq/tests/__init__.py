@@ -41,6 +41,27 @@ class TestEnqueue(testing.OOTestCaseWithCursor):
         })
         return acc_id
 
+    def create_template(self):
+
+        imd_obj = self.openerp.pool.get('ir.model.data')
+        tmpl_obj = self.openerp.pool.get('poweremail.templates')
+        cursor = self.cursor
+        uid = self.uid
+        acc_id = self.create_account()
+
+        model_partner = imd_obj.get_object_reference(
+            cursor, uid, 'base', 'model_res_partner'
+        )[1]
+
+        tmpl_id = tmpl_obj.create(cursor, uid, {
+            'name': 'Test template',
+            'object_name': model_partner,
+            'enforce_from_account': acc_id,
+            'template_language': 'mako',
+            'def_priority': '2'
+        })
+        return tmpl_id
+
     def test_enqueue_normal_low_priority_mail_goes_last_position_of_queue(self):
 
         mail_obj = self.openerp.pool.get('poweremail.mailbox')
@@ -120,4 +141,64 @@ class TestEnqueue(testing.OOTestCaseWithCursor):
         self.assertEqual(
             last_job.args[3:6],
             ('poweremail.mailbox', 'send_in_background', [normal_id])
+        )
+
+    def test_enqueue_high_priority_mail_goes_first_position_of_render_queue(self):
+        imd_obj = self.openerp.pool.get('ir.model.data')
+        send_obj = self.openerp.pool.get('poweremail.send.wizard')
+
+        job = self.q.enqueue(enqueue_dummy_method)
+        self.assertEqual(len(self.q), 1)
+        self.assertEqual(self.q.jobs[0], job)
+
+        cursor = self.cursor
+        uid = self.uid
+        partner_id = imd_obj.get_object_reference(
+            cursor, uid, 'base', 'res_partner_asus'
+        )[1]
+
+        tmpl_id = self.create_template()
+
+        ctx = {
+            'active_id': partner_id,
+            'active_ids': [partner_id],
+            'src_rec_ids': [partner_id],
+            'src_model': 'res.partner',
+            'template_id': tmpl_id
+        }
+
+        wiz_id = send_obj.create(cursor, uid, {}, context=ctx)
+        wiz = send_obj.browse(cursor, uid, wiz_id)
+        self.assertEqual(wiz.priority, '2')
+
+        ctx2 = ctx.copy()
+        ctx2['save_async'] = True
+        wiz.save_to_mailbox(context=ctx2)
+        self.assertEqual(len(self.q), 2)
+        first_job = self.q.jobs[0]
+        self.assertEqual(
+            first_job.args[3:5],
+            ('poweremail.send.wizard', 'save_to_mailbox_in_background_at_front')
+        )
+
+        wiz_id = send_obj.create(cursor, uid, {}, context=ctx)
+        send_obj.write(cursor, uid, [wiz_id], {'priority': '1'})
+        wiz = send_obj.browse(cursor, uid, wiz_id)
+        self.assertEqual(wiz.priority, '1')
+
+        ctx2 = ctx.copy()
+        ctx2['save_async'] = True
+        wiz.save_to_mailbox(context=ctx2)
+        self.assertEqual(len(self.q), 3)
+
+        last_job = self.q.jobs[-1]
+        self.assertEqual(
+            last_job.args[3:5],
+            ('poweremail.send.wizard', 'save_to_mailbox_in_background')
+        )
+
+        first_job = self.q.jobs[0]
+        self.assertEqual(
+            first_job.args[3:5],
+            ('poweremail.send.wizard', 'save_to_mailbox_in_background_at_front')
         )
