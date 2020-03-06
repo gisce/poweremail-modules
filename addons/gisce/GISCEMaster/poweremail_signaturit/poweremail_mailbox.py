@@ -7,6 +7,14 @@ class PoweremailMailbox(osv.osv):
 
     _inherit = 'poweremail.mailbox'
 
+    @staticmethod
+    def get_email_sent_state():
+        return "email_delivered"
+
+    @staticmethod
+    def get_email_opened_state():
+        return "email_opened"
+
     def _get_certificat_states(self, cursor, uid, context=None):
         res = super(PoweremailMailbox, self)._get_certificat_states(cursor, uid, context=context)
         res += [
