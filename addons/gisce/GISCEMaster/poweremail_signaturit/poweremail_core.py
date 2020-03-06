@@ -44,7 +44,7 @@ class PoweremailCore(osv.osv):
         if payload is None:
             payload = {}
 
-        if addresses is None or not addresses.get("TO"):
+        if addresses is None or not addresses.get("To"):
             raise osv.except_osv(_(u"Error"), _(u"No s'ha especificat cap destinatari"))
         try:
             addresses_list = self.get_ids_from_dict(addresses)
@@ -75,9 +75,9 @@ class PoweremailCore(osv.osv):
         params['recipients'] = {}
         for key in addresses_list:
             key = key.lower()
-            if key in ["to", "from"]:
+            if key in ["to", "from", "all"]:
                 continue
-            if not addresses_list[key]:
+            if not addresses_list.get(key):
                 continue
             if key not in params['recipients']:
                 params['recipients'][key] = []
@@ -106,11 +106,11 @@ class PoweremailCore(osv.osv):
             body=body_html,
             params=params
         )
-        if response.get("id") and context.get("poweremail_id"):
+        if "id" in response and context.get("poweremail_id"):
             self.pool.get("poweremail.mailbox").write(cr, uid, context.get("poweremail_id"), {
                 'certificat_signature_id': response.get("id"),
                 'certificat_state': "email_processed"
             })
-        return True
+        return "id" in response
 
 PoweremailCore()
