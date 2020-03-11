@@ -7,6 +7,7 @@
     "category": "GISCEMaster",
     "depends": [
         'base',
+        'base_extended',
         'poweremail_certificat',
     ],
     "init_xml": [],
