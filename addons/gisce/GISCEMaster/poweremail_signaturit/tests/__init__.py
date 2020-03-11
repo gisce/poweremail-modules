@@ -119,5 +119,5 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
             recipients=[{'name': 'eberloso@gisce.net', 'email': 'eberloso@gisce.net'}],
             subject=subject,
             body=body['html'],
-            params={'type': "open_email", "recipients": {}}
+            params={'type': "open_document", "recipients": {}}
         )
