@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from osv import osv, fields
 from tools.translate import _
+from datetime import datetime
 
 
 class PoweremailMailbox(osv.osv):
@@ -17,13 +18,16 @@ class PoweremailMailbox(osv.osv):
         # interessa i si el email esta en error tampoc ens interesa perque no es moura d'alla
         final_certificat_state = self.get_email_opened_state(cursor, uid)
         pwids = self.search(cursor, uid, [
-            ('certificat_state', 'not in', [final_certificat_state, 'email_bounced'])
+            ('certificat', '=', True), ('certificat_state', 'not in', [final_certificat_state, 'email_bounced'])
         ])
+        self.write(cursor, uid, pwids, {'certificat_update_datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
         for poweremail_info in self.read(cursor, uid, pwids, ['certificat_signature_id']):
             res = client.get_email(poweremail_info['certificat_signature_id'])
+            if "id" not in res:
+                continue
             email_events = []
-            for certificate in res.get("certificates"):  # Hauria de ser nomes 1 pero bueno
-                for event in certificate.get("events"):  # Ens guardem tots els events que ha tingut el email
+            for certificate in res.get("certificates", []):  # Hauria de ser nomes 1 pero bueno
+                for event in certificate.get("events", []):  # Ens guardem tots els events que ha tingut el email
                     email_events.append((event['created_at'], event["type"]))
             # Si un dels events es que s'ha arrivat al estat get_email_opened_state, ja en tenim prou amb aixo
             if final_certificat_state in [x[1] for x in email_events]:
