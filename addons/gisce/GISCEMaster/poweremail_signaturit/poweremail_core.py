@@ -88,7 +88,7 @@ class PoweremailCore(osv.osv):
                 })
 
         # Certified email type
-        params['type'] = "open_email"
+        params['type'] = "open_document"
 
         # Attachments
         documents = []

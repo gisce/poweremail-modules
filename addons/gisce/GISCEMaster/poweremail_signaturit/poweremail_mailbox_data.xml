@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<openerp>
+    <data noupdate="1">
+        <record model="res.config" id="signaturit_email_opened_state" forcecreate="1">
+          <field name="name">signaturit_email_opened_state</field>
+          <field name="value">document_opened</field>
+          <field name="description">Defineix quin event de signaturit es considera com que el client ha estat informat feacientment. Les opcions son:
+* email_processed - The email has been processed.
+* email_delivered - The email has been delivered.
+* email_opened - The email has been opened.
+* email_bounced - The server cannot deliver the message. Bounces often are caused by outdated or incorrectly entered email addresses.
+* email_deferred - The email cannot immediately be delivered, but it hasn’t been completely rejected. Sometimes called a soft bounce, it will be retried for 72 hours.
+* documents_opened - The document overview has been opened.
+* document_opened - The document has been opened.
+* document_downloaded - The document has been downloaded.
+</field>
+        </record>
+    </data>
+</openerp>
