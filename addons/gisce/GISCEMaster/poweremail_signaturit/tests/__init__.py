@@ -57,8 +57,9 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
         pwid = poweremail_o.create(cursor, uid, {
             'pem_subject': "Test Mail",
             'pem_account_id': paid,
-            'certificat_signaturit_id': "123456789",
-            'certificat_state': "init"
+            'certificat_signature_id': "123456789",
+            'certificat_state': "init",
+            'certificat': True
         })
 
         # Primer provem que s'actualitza be quan li diguem que s'ha enviat el email
