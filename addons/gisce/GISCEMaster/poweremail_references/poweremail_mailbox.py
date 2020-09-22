@@ -73,6 +73,50 @@ class PoweremailMailbox(osv.osv):
         self.poweremail_callback(cursor, uid, pe_id, 'create', vals, context)
         return pe_id
 
+    def validate_referenced_object_exists(self, cursor, uid, id, vals, context=None):
+        ret = False
+        fields = ['reference']
+        result = self._read_flat(cursor, uid, [id], fields, context, '_classic_read')
+
+        for r in result:
+            for key, v in r.items():
+                if v is None:
+                    r[key] = False
+                if key in self._columns.keys():
+                    type = self._columns[key]._type
+                    required = self._columns[key].required
+                elif key in self._inherit_fields.keys():
+                    type = self._inherit_fields[key][2]._type
+                    required = self._inherit_fields[key][2].required
+                else:
+                    continue
+                if type == 'reference' and v:
+                    model, ref_id = v.split(',')
+                    ref_obj = self.pool.get(model)
+
+                    if ref_id != '0':
+                        id_exist = ref_obj.search(cursor, 1, [
+                            ('id', '=', ref_id)
+                        ], context={'active_test': False})
+                        if id_exist:
+        return ret
+
+    def read(self, cursor, uid, ids, vals, context=None):
+        if context is None:
+            context = {}
+        select = ids
+        if isinstance(ids, (int, long)):
+            select = [ids]
+        for id in select:
+            res = self.validate_referenced_object_exists(cursor, uid, id, vals, context=None)
+            if res:
+                ret = super(PoweremailMailbox,
+                        self).read(cursor, uid, id, vals, context)
+            else:
+                ret = super(PoweremailMailbox,
+                        self).unlink(cursor, uid, id, context)
+        return ret
+
     def write(self, cursor, uid, ids, vals, context=None):
         if context is None:
             context = {}
