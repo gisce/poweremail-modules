@@ -76,7 +76,7 @@ class PoweremailMailbox(osv.osv):
     def validate_referenced_object_exists(self, cursor, uid, id, vals, context=None):
         ret = False
         fields = ['reference']
-        result = self._read_flat(cursor, uid, [id], fields, context, '_classic_read')
+        result = self._read_flat(cursor, uid, id, fields, context, '_classic_read')
 
         for r in result:
             for key, v in r.items():
@@ -108,13 +108,13 @@ class PoweremailMailbox(osv.osv):
         if isinstance(ids, (int, long)):
             select = [ids]
         for id in select:
-            res = self.validate_referenced_object_exists(cursor, uid, id, vals, context=None)
+            res = self.validate_referenced_object_exists(cursor, uid, [id], vals, context=None)
             if res:
                 ret = super(PoweremailMailbox,
-                        self).read(cursor, uid, id, vals, context)
+                        self).read(cursor, uid, [id], vals, context)
             else:
                 ret = super(PoweremailMailbox,
-                        self).unlink(cursor, uid, id, context)
+                        self).unlink(cursor, uid, [id], context)
         return ret
 
     def write(self, cursor, uid, ids, vals, context=None):
