@@ -74,23 +74,13 @@ class PoweremailMailbox(osv.osv):
         return pe_id
 
     def validate_referenced_object_exists(self, cursor, uid, id, vals, context=None):
-        ret = False
+        ret = True
         fields = ['reference']
         result = self._read_flat(cursor, uid, id, fields, context, '_classic_read')
-
         for r in result:
-            for key, v in r.items():
-                if v is None:
-                    r[key] = False
-                if key in self._columns.keys():
-                    type = self._columns[key]._type
-                    required = self._columns[key].required
-                elif key in self._inherit_fields.keys():
-                    type = self._inherit_fields[key][2]._type
-                    required = self._inherit_fields[key][2].required
-                else:
-                    continue
-                if type == 'reference' and v:
+            if 'reference' in r.keys():
+                v = r['reference']
+                if v:
                     model, ref_id = v.split(',')
                     ref_obj = self.pool.get(model)
 
@@ -98,7 +88,8 @@ class PoweremailMailbox(osv.osv):
                         id_exist = ref_obj.search(cursor, 1, [
                             ('id', '=', ref_id)
                         ], context={'active_test': False})
-                        if id_exist:
+                        if not id_exist:
+                            ret = False
         return ret
 
     def read(self, cursor, uid, ids, vals, context=None):
@@ -107,14 +98,18 @@ class PoweremailMailbox(osv.osv):
         select = ids
         if isinstance(ids, (int, long)):
             select = [ids]
+        valid_select = []
         for id in select:
             res = self.validate_referenced_object_exists(cursor, uid, [id], vals, context=None)
             if res:
-                ret = super(PoweremailMailbox,
-                        self).read(cursor, uid, [id], vals, context)
+                valid_select.append(id)
             else:
-                ret = super(PoweremailMailbox,
+                super(PoweremailMailbox,
                         self).unlink(cursor, uid, [id], context)
+        ret = []
+        if valid_select:
+            ret = super(PoweremailMailbox,
+                        self).read(cursor, uid, valid_select, vals, context)
         return ret
 
     def write(self, cursor, uid, ids, vals, context=None):
