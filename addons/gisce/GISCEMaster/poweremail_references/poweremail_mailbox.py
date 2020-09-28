@@ -92,7 +92,7 @@ class PoweremailMailbox(osv.osv):
                             ret = False
         return ret
 
-    def read(self, cursor, uid, ids, vals, context=None):
+    def read(self, cursor, uid, ids, vals, context=None, load='_classic_read'):
         if context is None:
             context = {}
         select = ids
@@ -109,7 +109,7 @@ class PoweremailMailbox(osv.osv):
         ret = []
         if valid_select:
             ret = super(PoweremailMailbox,
-                        self).read(cursor, uid, valid_select, vals, context)
+                        self).read(cursor, uid, valid_select, vals, context, load)
         return ret
 
     def write(self, cursor, uid, ids, vals, context=None):
