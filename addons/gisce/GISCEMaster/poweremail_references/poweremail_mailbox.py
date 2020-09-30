@@ -110,6 +110,8 @@ class PoweremailMailbox(osv.osv):
         if valid_select:
             ret = super(PoweremailMailbox,
                         self).read(cursor, uid, valid_select, vals, context, load)
+        if isinstance(ids, (int, long)):
+            return ret[0]
         return ret
 
     def write(self, cursor, uid, ids, vals, context=None):
