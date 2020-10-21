@@ -73,6 +73,47 @@ class PoweremailMailbox(osv.osv):
         self.poweremail_callback(cursor, uid, pe_id, 'create', vals, context)
         return pe_id
 
+    def validate_referenced_object_exists(self, cursor, uid, id, vals, context=None):
+        ret = True
+        fields = ['reference']
+        result = self._read_flat(cursor, uid, id, fields, context, '_classic_read')
+        for r in result:
+            if 'reference' in r.keys():
+                v = r['reference']
+                if v:
+                    model, ref_id = v.split(',')
+                    ref_obj = self.pool.get(model)
+
+                    if ref_id != '0':
+                        id_exist = ref_obj.search(cursor, 1, [
+                            ('id', '=', ref_id)
+                        ], context={'active_test': False})
+                        if not id_exist:
+                            ret = False
+        return ret
+
+    def read(self, cursor, uid, ids, vals, context=None, load='_classic_read'):
+        if context is None:
+            context = {}
+        select = ids
+        if isinstance(ids, (int, long)):
+            select = [ids]
+        valid_select = []
+        for id in select:
+            res = self.validate_referenced_object_exists(cursor, uid, [id], vals, context=None)
+            if res:
+                valid_select.append(id)
+            else:
+                super(PoweremailMailbox,
+                        self).unlink(cursor, uid, [id], context)
+        ret = []
+        if valid_select:
+            ret = super(PoweremailMailbox,
+                        self).read(cursor, uid, valid_select, vals, context, load)
+        if isinstance(ids, (int, long)):
+            return ret[0]
+        return ret
+
     def write(self, cursor, uid, ids, vals, context=None):
         if context is None:
             context = {}
