@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenERP Server 5.0.14\n"
 "Report-Msgid-Bugs-To: support@openerp.com\n"
-"POT-Creation-Date: 2014-05-02 10:52:16+0000\n"
-"PO-Revision-Date: 2014-05-02 10:52:16+0000\n"
+"POT-Creation-Date: 2020-10-28 20:48\n"
+"PO-Revision-Date: 2020-10-28 20:48\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -18,38 +18,43 @@ msgstr ""
 #. module: poweremail_references
 #: constraint:ir.ui.view:0
 msgid "Invalid XML for View Architecture!"
-msgstr "Invalid XML for View Architecture!"
-
-#. module: poweremail_references
-#: view:poweremail.templates:0
-msgid "Create Direct Access"
-msgstr "Create Direct Access"
+msgstr ""
 
 #. module: poweremail_references
 #: model:ir.module.module,description:poweremail_references.module_meta_information
 #: model:ir.module.module,shortdesc:poweremail_references.module_meta_information
 msgid "Poweremail References"
-msgstr "Poweremail References"
+msgstr ""
+
+#. module: poweremail_references
+#: view:poweremail.templates:0
+msgid "Create Direct Access"
+msgstr ""
+
+#. module: poweremail_references
+#: field:poweremail.mailbox,meta:0
+msgid "Meta information"
+msgstr ""
 
 #. module: poweremail_references
 #: code:addons/poweremail_references/poweremail_template.py:24
 #: code:addons/poweremail_references/poweremail_template.py:43
 #, python-format
 msgid "%s Mail Access"
-msgstr "%s Mail Access"
+msgstr ""
 
 #. module: poweremail_references
 #: field:poweremail.templates,ref_ir_act_window_access:0
 msgid "Access Window Action"
-msgstr "Access Window Action"
+msgstr ""
 
 #. module: poweremail_references
 #: field:poweremail.mailbox,reference:0
 msgid "Source Object"
-msgstr "Source Object"
+msgstr ""
 
 #. module: poweremail_references
 #: field:poweremail.templates,ref_ir_value_access:0
 msgid "Access Button"
-msgstr "Access Button"
+msgstr ""
 
