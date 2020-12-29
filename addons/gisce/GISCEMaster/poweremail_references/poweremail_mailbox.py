@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
-
 from osv import osv, fields
+import six
+
 
 class PoweremailMailbox(osv.osv):
     _name = "poweremail.mailbox"
@@ -96,7 +97,7 @@ class PoweremailMailbox(osv.osv):
         if context is None:
             context = {}
         select = ids
-        if isinstance(ids, (int, long)):
+        if isinstance(ids, six.integer_types):
             select = [ids]
         valid_select = []
         for id in select:
@@ -110,7 +111,7 @@ class PoweremailMailbox(osv.osv):
         if valid_select:
             ret = super(PoweremailMailbox,
                         self).read(cursor, uid, valid_select, fields, context, load)
-        if isinstance(ids, (int, long)) and ret:
+        if isinstance(ids, six.integer_types) and ret:
             return ret[0]
         return ret
 
