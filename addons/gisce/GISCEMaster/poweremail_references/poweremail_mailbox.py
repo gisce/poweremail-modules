@@ -92,7 +92,7 @@ class PoweremailMailbox(osv.osv):
                             ret = False
         return ret
 
-    def read(self, cursor, uid, ids, vals, context=None, load='_classic_read'):
+    def read(self, cursor, uid, ids, fields=None, context=None, load='_classic_read'):
         if context is None:
             context = {}
         select = ids
@@ -100,7 +100,7 @@ class PoweremailMailbox(osv.osv):
             select = [ids]
         valid_select = []
         for id in select:
-            res = self.validate_referenced_object_exists(cursor, uid, [id], vals, context=None)
+            res = self.validate_referenced_object_exists(cursor, uid, [id], fields, context=None)
             if res:
                 valid_select.append(id)
             else:
@@ -109,7 +109,7 @@ class PoweremailMailbox(osv.osv):
         ret = []
         if valid_select:
             ret = super(PoweremailMailbox,
-                        self).read(cursor, uid, valid_select, vals, context, load)
+                        self).read(cursor, uid, valid_select, fields, context, load)
         if isinstance(ids, (int, long)):
             return ret[0]
         return ret
