@@ -110,7 +110,7 @@ class PoweremailMailbox(osv.osv):
         if valid_select:
             ret = super(PoweremailMailbox,
                         self).read(cursor, uid, valid_select, fields, context, load)
-        if isinstance(ids, (int, long)):
+        if isinstance(ids, (int, long)) and ret:
             return ret[0]
         return ret
 

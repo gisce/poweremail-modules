@@ -2,14 +2,15 @@
 # This file contains the translation of the following modules:
 # 
 # Translators:
+# Agustí Fita <afita@gisce.net>, 2020.
 # Joan Grande <jgrande@el-gas.es>, 2014.
 msgid ""
 msgstr ""
 "Project-Id-Version: GISCE-ERP\n"
 "Report-Msgid-Bugs-To: https://github.com/gisce/erp/issues\n"
-"POT-Creation-Date: 2014-05-02 10:52:16+0000\n"
-"PO-Revision-Date: 2014-05-02 10:58+0000\n"
-"Last-Translator: Joan Grande <jgrande@el-gas.es>\n"
+"POT-Creation-Date: 2020-10-28 20:48\n"
+"PO-Revision-Date: 2020-10-30 12:27+0000\n"
+"Last-Translator: Agustí Fita <afita@gisce.net>\n"
 "Language-Team: Catalan (Spain) <erp@dev.gisce.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,15 +24,20 @@ msgid "Invalid XML for View Architecture!"
 msgstr "XML incorrecte per l'arquitectura de vista"
 
 #. module: poweremail_references
+#: model:ir.module.module,description:poweremail_references.module_meta_information
+#: model:ir.module.module,shortdesc:poweremail_references.module_meta_information
+msgid "Poweremail References"
+msgstr "Referències Poweremail"
+
+#. module: poweremail_references
 #: view:poweremail.templates:0
 msgid "Create Direct Access"
 msgstr "Crear accés directe"
 
 #. module: poweremail_references
-#: model:ir.module.module,description:poweremail_references.module_meta_information
-#: model:ir.module.module,shortdesc:poweremail_references.module_meta_information
-msgid "Poweremail References"
-msgstr "Referències Poweremail"
+#: field:poweremail.mailbox,meta:0
+msgid "Meta information"
+msgstr "Meta informació"
 
 #. module: poweremail_references
 #: code:addons/poweremail_references/poweremail_template.py:24

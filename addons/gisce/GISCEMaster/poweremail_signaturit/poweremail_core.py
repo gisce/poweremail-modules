@@ -94,6 +94,7 @@ class PoweremailCore(osv.osv):
         documents = []
         tmp_dir = tempfile.mkdtemp(prefix='poweremail-signaturit-')
         for fname, fdata in payload.iteritems():
+            fname = fname.replace("/", "")  # Pels que posen barres al numero de factura...
             document_path = os.path.join(tmp_dir, fname)
             with open(document_path, 'w') as tmp_document:
                 tmp_document.write(base64.b64decode(fdata))
