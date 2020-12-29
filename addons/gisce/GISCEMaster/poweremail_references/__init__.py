@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """poweremail reference
 """
-import poweremail_mailbox
-import poweremail_template
+from __future__ import absolute_import
+from . import poweremail_mailbox
+from . import poweremail_template
