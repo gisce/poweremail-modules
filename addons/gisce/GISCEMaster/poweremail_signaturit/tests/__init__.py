@@ -7,6 +7,7 @@ from destral.transaction import Transaction
 from osv.orm import except_orm
 import mock
 from addons import get_module_resource
+from tools import config
 
 
 class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
@@ -44,6 +45,7 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
         uid = self.uid
         pool = self.openerp.pool
         client = self.get_sandbox_client()
+        config['signaturit_token'] = 'RANDOM_RANDOM'
         mocked_get_signaturit_client.return_value = client
 
         poweracc_o = pool.get("poweremail.core_accounts")
