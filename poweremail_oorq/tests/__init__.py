@@ -2,6 +2,7 @@
 from destral import testing
 from rq import Queue
 from oorq.oorq import setup_redis_connection
+from signals import DB_CURSOR_COMMIT
 import os
 
 
@@ -201,4 +202,57 @@ class TestEnqueue(testing.OOTestCaseWithCursor):
         self.assertEqual(
             first_job.args[3:5],
             ('poweremail.send.wizard', 'save_to_mailbox_in_background_at_front')
+        )
+
+    def test_generate_mail_in_background_high_priority(self):
+        imd_obj = self.openerp.pool.get('ir.model.data')
+        tmpl_obj = self.openerp.pool.get('poweremail.templates')
+        cursor = self.cursor
+        uid = self.uid
+        tmpl_id = self.create_template()
+        partner_id = imd_obj.get_object_reference(
+            cursor, uid, 'base', 'res_partner_asus'
+        )[1]
+
+        # Add something to the queue to check if other job is putted first
+        job = self.q.enqueue(enqueue_dummy_method)
+        self.assertEqual(len(self.q), 1)
+        self.assertEqual(self.q.jobs[0], job)
+
+        tmpl_obj.generate_mail(cursor, uid, tmpl_id, [partner_id])
+        # Hack to put the job in to the queue without commiting
+        DB_CURSOR_COMMIT.send(cursor)
+
+        self.assertEqual(len(self.q), 2)
+        first_job = self.q.jobs[0]
+        self.assertEqual(
+            first_job.args[3:6],
+            ('poweremail.templates', 'generate_mail_in_background_at_front', tmpl_id)
+        )
+
+    def test_generate_mail_in_background_low_priority(self):
+        imd_obj = self.openerp.pool.get('ir.model.data')
+        tmpl_obj = self.openerp.pool.get('poweremail.templates')
+        cursor = self.cursor
+        uid = self.uid
+        tmpl_id = self.create_template()
+        tmpl_obj.write(cursor, uid, [tmpl_id], {'def_priority': '1'})
+        partner_id = imd_obj.get_object_reference(
+            cursor, uid, 'base', 'res_partner_asus'
+        )[1]
+
+        # Add something to the queue to check if other job is putted first
+        job = self.q.enqueue(enqueue_dummy_method)
+        self.assertEqual(len(self.q), 1)
+        self.assertEqual(self.q.jobs[0], job)
+
+        tmpl_obj.generate_mail(cursor, uid, tmpl_id, [partner_id])
+        # Hack to put the job in to the queue without commiting
+        DB_CURSOR_COMMIT.send(cursor)
+
+        self.assertEqual(len(self.q), 2)
+        first_job = self.q.jobs[-1]
+        self.assertEqual(
+            first_job.args[3:6],
+            ('poweremail.templates', 'generate_mail_in_background', tmpl_id)
         )
