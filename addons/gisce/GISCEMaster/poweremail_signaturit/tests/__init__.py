@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from addons import get_module_resource
 from destral import testing
+from destral.patch import PatchNewCursors
 from signaturit_sdk.signaturit_client import SignaturitClient
 from destral.transaction import Transaction
 from osv.orm import except_orm
 import mock
 from addons import get_module_resource
+from tools import config
 
 
 class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
@@ -43,6 +45,7 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
         uid = self.uid
         pool = self.openerp.pool
         client = self.get_sandbox_client()
+        config['signaturit_token'] = 'RANDOM_RANDOM'
         mocked_get_signaturit_client.return_value = client
 
         poweracc_o = pool.get("poweremail.core_accounts")
@@ -61,46 +64,46 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
             'certificat_state': "init",
             'certificat': True
         })
+        with PatchNewCursors():
+            # Primer provem que s'actualitza be quan li diguem que s'ha enviat el email
+            resource = get_module_resource('poweremail_signaturit', 'tests', 'fixtures', 'email_sent_res.json')
+            with open(resource, 'r') as demo_file:
+                response = demo_file.read()
+            mocked.return_value = eval(response)
+            self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "init")
+            poweremail_o.update_poweremail_certificat_state(cursor, uid, [])
+            self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "email_delivered")
 
-        # Primer provem que s'actualitza be quan li diguem que s'ha enviat el email
-        resource = get_module_resource('poweremail_signaturit', 'tests', 'fixtures', 'email_sent_res.json')
-        with open(resource, 'r') as demo_file:
-            response = demo_file.read()
-        mocked.return_value = eval(response)
-        self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "init")
-        poweremail_o.update_poweremail_certificat_state(cursor, uid, [])
-        self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "email_delivered")
+            # Ara procem provem que s'actualitza be quan li diguem que s'ha obert el email
+            resource = get_module_resource('poweremail_signaturit', 'tests', 'fixtures', 'email_opened_res.json')
+            with open(resource, 'r') as demo_file:
+                response = demo_file.read()
+            mocked.return_value = eval(response)
+            poweremail_o.write(cursor, uid, pwid, {'certificat_state': 'init'})
+            self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "init")
+            poweremail_o.update_poweremail_certificat_state(cursor, uid, [])
+            self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "email_opened")
 
-        # Ara procem provem que s'actualitza be quan li diguem que s'ha obert el email
-        resource = get_module_resource('poweremail_signaturit', 'tests', 'fixtures', 'email_opened_res.json')
-        with open(resource, 'r') as demo_file:
-            response = demo_file.read()
-        mocked.return_value = eval(response)
-        poweremail_o.write(cursor, uid, pwid, {'certificat_state': 'init'})
-        self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "init")
-        poweremail_o.update_poweremail_certificat_state(cursor, uid, [])
-        self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "email_opened")
+            # Ara procem provem que s'actualitza be quan li diguem que s'ha obert el document
+            resource = get_module_resource('poweremail_signaturit', 'tests', 'fixtures', 'document_opened_res.json')
+            with open(resource, 'r') as demo_file:
+                response = demo_file.read()
+            mocked.return_value = eval(response)
+            self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "email_opened")
+            poweremail_o.update_poweremail_certificat_state(cursor, uid, [])
+            self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "document_opened")
 
-        # Ara procem provem que s'actualitza be quan li diguem que s'ha obert el document
-        resource = get_module_resource('poweremail_signaturit', 'tests', 'fixtures', 'document_opened_res.json')
-        with open(resource, 'r') as demo_file:
-            response = demo_file.read()
-        mocked.return_value = eval(response)
-        self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "email_opened")
-        poweremail_o.update_poweremail_certificat_state(cursor, uid, [])
-        self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "document_opened")
-
-        # Ara procem provem que s'actualitza be quan li diguem que s'ha descarregat el document. Encara que s'hagi
-        # descarregat, com que l'estat final es "document obert", no ens actualitzara a document_descarregat i es
-        # quedara amb el document_obert
-        resource = get_module_resource('poweremail_signaturit', 'tests', 'fixtures', 'document_downloaded_res.json')
-        with open(resource, 'r') as demo_file:
-            response = demo_file.read()
-        mocked.return_value = eval(response)
-        poweremail_o.write(cursor, uid, pwid, {'certificat_state': 'init'})
-        self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "init")
-        poweremail_o.update_poweremail_certificat_state(cursor, uid, [])
-        self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "document_opened")
+            # Ara procem provem que s'actualitza be quan li diguem que s'ha descarregat el document. Encara que s'hagi
+            # descarregat, com que l'estat final es "document obert", no ens actualitzara a document_descarregat i es
+            # quedara amb el document_obert
+            resource = get_module_resource('poweremail_signaturit', 'tests', 'fixtures', 'document_downloaded_res.json')
+            with open(resource, 'r') as demo_file:
+                response = demo_file.read()
+            mocked.return_value = eval(response)
+            poweremail_o.write(cursor, uid, pwid, {'certificat_state': 'init'})
+            self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "init")
+            poweremail_o.update_poweremail_certificat_state(cursor, uid, [])
+            self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "document_opened")
 
     @mock.patch("poweremail_signaturit.poweremail_core.get_signaturit_client")
     def test_send_mail_certificat_fails_and_returns_false(self, mocked_get_signaturit_client):
