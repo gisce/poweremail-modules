@@ -71,7 +71,11 @@ class PoweremailSendWizard(osv.osv_memory):
                 res += res_job
             # Put the rendered mails on outbox
             mailbox_obj = self.pool.get('poweremail.mailbox')
-            mailbox_obj.write(cursor, uid, res, {'folder': 'outbox'}, ctx)
+            to_write = res
+            if res:
+                # Per si algun dels emails que volem moure no existeix. Aixi avitem AccesError i que falli tot el proces
+                to_write = mailbox_obj.search(cursor, uid, [('id', 'in', res)])
+            mailbox_obj.write(cursor, uid, to_write, {'folder': 'outbox'}, ctx)
         return res
 
     @job(queue=config.get('poweremail_render_queue', 'poweremail'), at_front=True)
