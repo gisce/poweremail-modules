@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GISCE-ERP\n"
 "Report-Msgid-Bugs-To: https://github.com/gisce/erp/issues\n"
-"POT-Creation-Date: 2021-11-23 21:39\n"
+"POT-Creation-Date: 2022-01-27 20:47\n"
 "PO-Revision-Date: 2020-05-06 15:31+0000\n"
 "Last-Translator: Eduard Berloso <eberloso@gisce.net>\n"
 "Language-Team: Spanish (Spain) <erp@dev.gisce.net>\n"
@@ -33,25 +33,25 @@ msgid "Ultima comprovacio"
 msgstr "Última comprovación"
 
 #. module: poweremail_signaturit
-#: code:addons/poweremail_signaturit/poweremail_mailbox.py:52
+#: code:addons/poweremail_signaturit/poweremail_mailbox.py:98
 #, python-format
 msgid "Email obert per el receptor"
 msgstr "Email abierto por el receptor"
 
 #. module: poweremail_signaturit
-#: code:addons/poweremail_signaturit/poweremail_mailbox.py:56
+#: code:addons/poweremail_signaturit/poweremail_mailbox.py:102
 #, python-format
 msgid "Documents del email oberts"
 msgstr "Documentos del email abiertos"
 
 #. module: poweremail_signaturit
-#: code:addons/poweremail_signaturit/poweremail_mailbox.py:51
+#: code:addons/poweremail_signaturit/poweremail_mailbox.py:97
 #, python-format
 msgid "Email enviat"
 msgstr "Email enviado"
 
 #. module: poweremail_signaturit
-#: code:addons/poweremail_signaturit/poweremail_mailbox.py:53
+#: code:addons/poweremail_signaturit/poweremail_mailbox.py:99
 #, python-format
 msgid "No s'ha pogut enviar el email"
 msgstr "No se ha podido enviar el email"
@@ -62,13 +62,13 @@ msgid "Poweremail using OORQ"
 msgstr "Poweremail using OORQ"
 
 #. module: poweremail_signaturit
-#: code:addons/poweremail_signaturit/poweremail_mailbox.py:54
+#: code:addons/poweremail_signaturit/poweremail_mailbox.py:100
 #, python-format
 msgid "No s'ha pogut enviar el email, es fara un reintent"
 msgstr "No se ha podido enviar el email, se realizará un reintento"
 
 #. module: poweremail_signaturit
-#: code:addons/poweremail_signaturit/poweremail_mailbox.py:50
+#: code:addons/poweremail_signaturit/poweremail_mailbox.py:96
 #, python-format
 msgid "Email processat (per ser enviat)"
 msgstr "Email procesado (para ser enviado)"
@@ -86,7 +86,7 @@ msgid "No s'ha especificat cap destinatari"
 msgstr "No se ha especificado ningún destinatario"
 
 #. module: poweremail_signaturit
-#: code:addons/poweremail_signaturit/poweremail_mailbox.py:55
+#: code:addons/poweremail_signaturit/poweremail_mailbox.py:101
 #, python-format
 msgid "Vista previa dels documents del email oberta"
 msgstr "Vista previa de los documentos del email abierta"
@@ -97,7 +97,7 @@ msgid "Signatureit ID"
 msgstr "Signatureit ID"
 
 #. module: poweremail_signaturit
-#: code:addons/poweremail_signaturit/poweremail_mailbox.py:57
+#: code:addons/poweremail_signaturit/poweremail_mailbox.py:103
 #, python-format
 msgid "Documents del email descarregats"
 msgstr "Documentos del email descargados"
