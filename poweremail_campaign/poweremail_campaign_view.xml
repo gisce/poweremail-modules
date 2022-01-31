@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <menuitem name="Power Email Campaigns" id="menu_poweremail_campaign" parent="poweremail.menu_poweremail_administration_server" sequence="1"/>
+
+        <record model="ir.ui.view" id="poweremail_campaign_form">
+            <field name="name">poweremail.campaign.form</field>
+            <field name="model">poweremail.campaign</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Power Email Campaigns">
+                    <group colspan="8" col="8">
+                        <field name="name" colspan="2"/>
+                        <field name="template_id" colspan="2"/>
+                        <field name="template_obj" colspan="2"/>
+                    </group>
+                    <group colspan="20" col="20">
+                        <group colspan="19" string="Filter Objects" col="1">
+                            <field name="domain" colspan="19" nolabel="1"/>
+                        </group>
+                        <group colspan="1" string="Help" col="1">
+                            <label align="0.0" string="The domain has to be a list of tuples"/>
+                            <label align="0.0" string="with conditions, refeering the atributtes."/>
+                            <label align="0.0" string="For example, if we want to search a"/>
+                            <label align="0.0" string="company named 'Adrià' created after '01-01-2020': "/>
+                            <label align="0.0" string="  "/>
+                            <label align="0.3" string="[('name', '=', 'Adrià'), ('create_date', '>', '2020-01-01')] "/>
+                            <label align="0.0" string="  "/>
+                            <label align="0.0" string="[Empty list '[]' indicates no filters are used]"/>
+                        </group>
+                    </group>
+                    <group colspan="8" col="8">
+                        <field name="progress_created" colspan="2" widget="progressbar"/>
+                    </group>
+                    <group colspan="8" col="8">
+                        <field name="progress_sent" colspan="2" widget="progressbar"/>
+                    </group>
+                    <group colspan="8" col="8">
+                        <button icon="gtk-open" name="%(poweremail_campaign.action_poweremail_campaign_list_lines)d" string="List Related Objects" type="action"/>
+                        <button icon="gtk-execute" name="update_linies_campanya" string="Update Lines" type="object" confirm="Are you sure? The current existent lines will be erased and new ones will be created."/>
+                        <button icon="gtk-execute" name="send_emails" string="Send Emails" type="object" confirm="Do you really want to send the emails?"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_campaign_tree">
+            <field name="name">poweremail.campaign.tree</field>
+            <field name="model">poweremail.campaign</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Power Email Campaigns">
+                    <field name="template_id" select="1"/>
+                    <field name="name" select="1"/>
+                    <field name="progress_created" select="1" widget="progressbar"/>
+                    <field name="progress_sent" select="1" widget="progressbar"/>
+                    <field name="template_obj" select="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_poweremail_campaign_view">
+            <field name="name">Power Email Campaigns</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">poweremail.campaign</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="poweremail_campaign_form"/>
+        </record>
+
+        <menuitem name="Campaigns" action="action_poweremail_campaign_view"
+                  id="menu_campaigns" parent="menu_poweremail_campaign" sequence="1"/>
+    </data>
+</openerp>
