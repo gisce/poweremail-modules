@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record id="view_poweremail_campaign_list_lines" model="ir.ui.view">
+            <field name="name">wizard.poweremail.campaign</field>
+            <field name="model">wizard.poweremail.campaign</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="List Related Objects">
+                    <label string="Do you want to open it?" colspan="4"/>
+                    <separator colspan="4"/>
+                    <group col="2" colspan="4">
+                        <button special="cancel" string="Cancel" icon="gtk-no"/>
+                        <button icon="gtk-ok" name="action_get_registres_campaign" string="Accept" type="object"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+        <record id="action_poweremail_campaign_list_lines" model="ir.actions.act_window">
+            <field name="name">List Poweremail Campaign Registers</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.poweremail.campaign</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</openerp>
