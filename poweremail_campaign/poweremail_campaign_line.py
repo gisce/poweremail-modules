@@ -93,11 +93,12 @@ class PoweremailCampaignLine(osv.osv):
 
     _columns = {
         'campaign_id': fields.many2one(
-            'poweremail.campaign', 'Campaign', required=True,
-            ondelete='set null'
+            'poweremail.campaign', 'Campaign', required=True
         ),
         'ref': fields.reference('Reference', selection=_get_ref, size=128, select=1),
-        'mail_id': fields.many2one('poweremail.mailbox', 'Mail ID'),
+        'mail_id': fields.many2one(
+            'poweremail.mailbox', 'Mail', ondelete='set null'
+        ),
         'state': fields.selection(STATE_SELECTION, 'State'),
         'log': fields.text('Line Log'),
     }
