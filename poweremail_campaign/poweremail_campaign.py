@@ -97,7 +97,7 @@ class PoweremailCampaign(osv.osv):
         pm_camp_obj = self.pool.get('poweremail.campaign')
         for camp_id in ids:
             campaign_v = pm_camp_obj.read(
-                cursor, uid, ['template_id', 'batch'],
+                cursor, uid, camp_id, ['template_id', 'batch'],
                 context=context
             )
             dmn = [
@@ -122,7 +122,7 @@ class PoweremailCampaign(osv.osv):
         'progress_sent': fields.function(_ff_sent, string='Progress Sent', type='float', method=True),
         'create_date': fields.datetime('Create Date', readonly=1),
         'template_obj': fields.function(_ff_object, string='Object', type='char', size=64, method=True, readonly=1),
-        'batch': fields.integer('Batch')
+        'batch': fields.integer('Batch', help='Sends the indicated quantity of emails each time the "Send Emails" button is pressed. 0 to send all.')
     }
 
     _defaults = {
