@@ -96,11 +96,23 @@ class PoweremailCampaign(osv.osv):
         pm_camp_line_obj = self.pool.get('poweremail.campaign.line')
         pm_camp_obj = self.pool.get('poweremail.campaign')
         for camp_id in ids:
-            pm_camp_brw = pm_camp_obj.browse(cursor, uid, camp_id)
-            references_ids = pm_camp_brw.reference_ids
-            template = pm_camp_brw.template_id.id
-            for id_brw in references_ids:
-                pm_camp_line_obj.send_mail_from_line(cursor, uid, id_brw.id, template, context=context)
+            campaign_v = pm_camp_obj.read(
+                cursor, uid, ['template_id', 'batch'],
+                context=context
+            )
+            dmn = [
+                ('campaign_id', '=', camp_id),
+                ('state', 'in', ('to_send', 'sending_error'))
+            ]
+            line_ids = pm_camp_line_obj.search(
+                cursor, uid, dmn, limit=campaign_v['batch'] or None,
+                context=context
+            )
+            for line_id in line_ids:
+                pm_camp_line_obj.send_mail_from_line(
+                    cursor, uid, line_id, campaign_v['template_id'][0],
+                    context=context
+                )
 
     _columns = {
         'template_id': fields.many2one('poweremail.templates', 'Template E-mail', required=True),
@@ -110,6 +122,7 @@ class PoweremailCampaign(osv.osv):
         'progress_sent': fields.function(_ff_sent, string='Progress Sent', type='float', method=True),
         'create_date': fields.datetime('Create Date', readonly=1),
         'template_obj': fields.function(_ff_object, string='Object', type='char', size=64, method=True, readonly=1),
+        'batch': fields.integer('Batch')
     }
 
     _defaults = {
