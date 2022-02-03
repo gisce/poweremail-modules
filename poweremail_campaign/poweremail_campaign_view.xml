@@ -40,6 +40,9 @@
                         <button icon="gtk-execute" name="update_linies_campanya" string="Update Lines" type="object" confirm="Are you sure? The current existent lines will be erased and new ones will be created."/>
                         <button icon="gtk-execute" name="send_emails" string="Send Emails" type="object" confirm="Do you really want to send the emails?"/>
                     </group>
+                    <group colspan="8" col="8">
+                        <field name="batch"/>
+                    </group>
                 </form>
             </field>
         </record>
