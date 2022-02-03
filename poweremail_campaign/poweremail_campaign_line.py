@@ -85,6 +85,8 @@ class PoweremailCampaignLine(osv.osv):
                        ('sending_error', 'Sending Error'),
                        ('sent', 'Sent')]
 
+    _rec_name = 'campaign_id'
+
     _columns = {
         'campaign_id': fields.many2one('poweremail.campaign', 'Campaign ID', required=True),
         'ref': fields.reference('Reference', selection=_get_ref, size=128, select=1),
@@ -97,7 +99,9 @@ class PoweremailCampaignLine(osv.osv):
         'state': lambda *a: 'to_send',
     }
 
+
 PoweremailCampaignLine()
+
 
 class PoweremailCampaign(osv.osv):
 
@@ -108,15 +112,5 @@ class PoweremailCampaign(osv.osv):
         'reference_ids': fields.one2many('poweremail.campaign.line', 'campaign_id', 'Campaign Line'),
     }
 
+
 PoweremailCampaign()
-
-class PoweremailMailbox(osv.osv):
-
-    _name = 'poweremail.mailbox'
-    _inherit = 'poweremail.mailbox'
-
-    _columns = {
-        'campaign_line_id': fields.many2one('poweremail.campaign.line', 'PowerEmail Campaign Line'),
-    }
-
-PoweremailMailbox()

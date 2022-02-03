@@ -65,7 +65,7 @@
             <field name="res_model">poweremail.campaign</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="poweremail_campaign_form"/>
+            <field name="view_id" ref="poweremail_campaign_tree"/>
         </record>
 
         <menuitem name="Campaigns" action="action_poweremail_campaign_view"
