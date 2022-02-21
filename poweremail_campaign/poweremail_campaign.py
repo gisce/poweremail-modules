@@ -35,11 +35,11 @@ class PoweremailCampaign(osv.osv):
             context = {}
         if not isinstance(ids, list):
             ids = [ids]
-        total = []
-        sent = []
         campanyes = self.browse(cursor, uid, ids, context)
         res = {}
         for campanya in campanyes:
+            total = []
+            sent = []
             for line in campanya.reference_ids:
                 if line.state == 'sent':
                     sent.append(line.id)
