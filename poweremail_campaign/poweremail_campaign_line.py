@@ -70,8 +70,8 @@ class PoweremailCampaignLine(osv.osv):
     def send_mail_from_line(self, cursor, uid, line_id, template, context=None):
         pm_template_obj = TransactionExecute(cursor.dbname, uid, 'poweremail.templates')
         self_obj = TransactionExecute(cursor.dbname, uid, 'poweremail.campaign.line')
-        estat = self.read(cursor, uid, line_id, ['state'])['state']
-        if estat in ('sent', 'sending'):
+        line_v = self.read(cursor, uid, line_id, ['state', 'mail_id'])
+        if line_v['state'] in ('sent', 'sending') and line_v['mail_id']:
             return
         ref_aux = self.read(cursor, uid, line_id, ['ref'])['ref']
         id_aux = int(ref_aux.split(",")[1])
@@ -83,6 +83,17 @@ class PoweremailCampaignLine(osv.osv):
         except Exception as e:
             self_obj.write(line_id, {'state': 'sending_error', 'log': str(e) + "\n"})
         return True
+
+    def generate_mail_button(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
+        if isinstance(ids, list):
+            ids = ids[0]
+        ctx = context.copy()
+        ctx['prefetch'] = False
+        line_id = self.browse(cursor, uid, ids, context=ctx)
+        template = line_id.campaign_id.template_id
+        return self.send_mail_from_line(cursor, uid, ids, template, context=context)
 
     STATE_SELECTION = [('to_send', 'To Send'),
                        ('sending', 'Sending'),
