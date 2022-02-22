@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	<data>
+		<record model="ir.ui.view" id="poweremail_mailbox_reference_form">
+            <field name="name">poweremail.mailbox.reference.form</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_mailbox_form"/>
+            <field name="arch" type="xml">
+            	<field name="history" position="after">
+                    <group colspan="2" col="2">
+                        <field name="reference"/>
+                        <field name="meta"/>
+                    </group>
+            	</field>
+            </field>
+    	</record>
+	</data>
+</openerp>
