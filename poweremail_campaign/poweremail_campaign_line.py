@@ -2,7 +2,8 @@
 
 from osv import osv, fields
 from osv.osv import TransactionExecute
-from tools.translate import _
+from base.res.partner.partner import _lang_get
+
 
 class PoweremailCampaignLine(osv.osv):
 
@@ -112,6 +113,7 @@ class PoweremailCampaignLine(osv.osv):
         ),
         'state': fields.selection(STATE_SELECTION, 'State'),
         'log': fields.text('Line Log'),
+        'lang': fields.selection(_lang_get, 'Language', size=5, readonly=True)
     }
 
     _defaults = {
