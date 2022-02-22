@@ -93,7 +93,7 @@ class PoweremailCampaignLine(osv.osv):
         ctx['prefetch'] = False
         line_id = self.browse(cursor, uid, ids, context=ctx)
         template = line_id.campaign_id.template_id
-        return self.send_mail_from_line(cursor, uid, ids, template, context=context)
+        return self.send_mail_from_line(cursor, uid, ids, template.id, context=context)
 
     STATE_SELECTION = [('to_send', 'To Send'),
                        ('sending', 'Sending'),
