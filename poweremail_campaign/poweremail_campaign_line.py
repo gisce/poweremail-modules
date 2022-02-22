@@ -63,6 +63,10 @@ class PoweremailCampaignLine(osv.osv):
         if vals.get('folder', False) and vals.get('folder', False) == 'sent':
             self.write(cursor, uid, ids, {'state': 'sent'})
 
+    def poweremail_unlink_callback(self, cursor, uid, ids, context=None):
+        self.poweremail_callback(cursor, uid, ids, 'unlink', context=context)
+        self.write(cursor, uid, ids, {'state': 'to_send'})
+
     def send_mail_from_line(self, cursor, uid, line_id, template, context=None):
         pm_template_obj = TransactionExecute(cursor.dbname, uid, 'poweremail.templates')
         self_obj = TransactionExecute(cursor.dbname, uid, 'poweremail.campaign.line')
@@ -85,10 +89,16 @@ class PoweremailCampaignLine(osv.osv):
                        ('sending_error', 'Sending Error'),
                        ('sent', 'Sent')]
 
+    _rec_name = 'campaign_id'
+
     _columns = {
-        'campaign_id': fields.many2one('poweremail.campaign', 'Campaign ID', required=True),
+        'campaign_id': fields.many2one(
+            'poweremail.campaign', 'Campaign', required=True
+        ),
         'ref': fields.reference('Reference', selection=_get_ref, size=128, select=1),
-        'mail_id': fields.many2one('poweremail.mailbox', 'Mail ID'),
+        'mail_id': fields.many2one(
+            'poweremail.mailbox', 'Mail', ondelete='set null'
+        ),
         'state': fields.selection(STATE_SELECTION, 'State'),
         'log': fields.text('Line Log'),
     }
@@ -97,7 +107,9 @@ class PoweremailCampaignLine(osv.osv):
         'state': lambda *a: 'to_send',
     }
 
+
 PoweremailCampaignLine()
+
 
 class PoweremailCampaign(osv.osv):
 
@@ -108,15 +120,5 @@ class PoweremailCampaign(osv.osv):
         'reference_ids': fields.one2many('poweremail.campaign.line', 'campaign_id', 'Campaign Line'),
     }
 
+
 PoweremailCampaign()
-
-class PoweremailMailbox(osv.osv):
-
-    _name = 'poweremail.mailbox'
-    _inherit = 'poweremail.mailbox'
-
-    _columns = {
-        'campaign_line_id': fields.many2one('poweremail.campaign.line', 'PowerEmail Campaign Line'),
-    }
-
-PoweremailMailbox()

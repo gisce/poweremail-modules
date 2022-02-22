@@ -28,7 +28,7 @@
                     <field name="campaign_id"/>
                     <field name="ref"/>
                     <field name="mail_id"/>
-                    <field name="state" readonly="1"/>
+                    <field name="state" readonly="1" select="1"/>
                 </tree>
             </field>
         </record>

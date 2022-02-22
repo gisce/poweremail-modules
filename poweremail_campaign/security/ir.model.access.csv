@@ -1,4 +1,10 @@
 "id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
-"access_poweremail_campaign","poweremail.campaign","model_poweremail_campaign","base.group_user",1,1,1,0
-"access_poweremail_campaign_line","poweremail.campaign.line","model_poweremail_campaign_line","base.group_user",1,1,1,0
-"access_wizard_poweremail_campaign","wizard.poweremail.campaign","model_wizard_poweremail_campaign","base.group_user",1,1,1,0
+"access_poweremail_campaign_r","poweremail.campaign","model_poweremail_campaign","poweremail.res_groups_peuserse",1,0,0,0
+"access_poweremail_campaign_w","poweremail.campaign","model_poweremail_campaign","poweremail.res_groups_peusersi",1,1,1,0
+"access_poweremail_campaign_u","poweremail.campaign","model_poweremail_campaign","poweremail.res_groups_pemanager",1,1,1,1
+"access_poweremail_campaign_line_r","poweremail.campaign.line","model_poweremail_campaign_line","poweremail.res_groups_peuserse",1,0,0,0
+"access_poweremail_campaign_line_w","poweremail.campaign.line","model_poweremail_campaign_line","poweremail.res_groups_peusersi",1,1,1,0
+"access_poweremail_campaign_line_u","poweremail.campaign.line","model_poweremail_campaign_line","poweremail.res_groups_pemanager",1,1,1,1
+"access_wizard_poweremail_campaign_r","wizard.poweremail.campaign","model_wizard_poweremail_campaign","poweremail.res_groups_peuserse",1,0,0,0
+"access_wizard_poweremail_campaign_w","wizard.poweremail.campaign","model_wizard_poweremail_campaign","poweremail.res_groups_peusersi",1,1,1,0
+"access_wizard_poweremail_campaign_u","wizard.poweremail.campaign","model_wizard_poweremail_campaign","poweremail.res_groups_pemanager",1,1,1,1
