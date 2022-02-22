@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="poweremail_mailbox_certificat_form">
+            <field name="name">poweremail.mailbox.signaturit.form</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail_certificat.poweremail_mailbox_certificat_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='certificat_update_datetime']" position="replace">
+                        <field name="certificat_update_datetime" colspan="2" readonly="1" string="Ultima comprovacio" select="2"/>
+                        <field name="certificat_signature_id" colspan="3" readonly="1"  select="2"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>

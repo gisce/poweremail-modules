@@ -1,0 +1,41 @@
+{
+    u'certificates': [
+        {
+            u'status': u'sent',
+            u'name': u'Eduard',
+            u'created_at': u'2020-03-11T11:30:30+0000',
+            u'id': u'63728d33-b337-4c26-8f01-df88b6f44c7e',
+            u'email': u'eberloso@gisce.net',
+            u'file': {
+                u'size': 121052,
+                u'name': u'Codigos+CNAEs_v2.1.pdf',
+                u'pages': 8
+            },
+            u'events': [
+                {
+                    u'created_at': u'2020-03-11T11:30:36+0000',
+                    u'type': u'email_processed'
+                },
+                {
+                    u'created_at': u'2020-03-11T11:30:39+0000',
+                    u'type': u'email_delivered'
+                },
+                {
+                    u'created_at': u'2020-03-11T11:39:41+0000',
+                    u'type': u'certification_completed'
+                },
+                {
+                    u'created_at': u'2020-03-11T11:39:41+0000',
+                    u'type': u'document_opened'
+                },
+                {
+                    u'created_at': u'2020-03-11T11:39:41+0000',
+                    u'type': u'document_downloaded'
+                }
+            ]
+        }
+    ],
+    u'created_at': u'2020-03-11T11:30:30+0000',
+    u'data': [],
+    u'id': u'b6983759-638b-11ea-8356-0241c1fe04da'
+}
