@@ -12,6 +12,7 @@
                         <field name="campaign_id" colspan="2"/>
                         <field name="ref" colspan="2"/>
                         <field name="mail_id" colspan="2"/>
+                        <button string="Generate mail" name="generate_mail_button" icon="gtk-refresh" type="object" colspan="2"/>
                         <field name="state" colspan="2"/>
                         <field name="log" colspan="4"/>
                     </group>
@@ -29,6 +30,7 @@
                     <field name="ref"/>
                     <field name="mail_id"/>
                     <field name="state" readonly="1" select="1"/>
+                    <field name="lang" select="1"/>
                 </tree>
             </field>
         </record>
