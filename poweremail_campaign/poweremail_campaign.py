@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from osv import osv, fields
-from osv.osv import TransactionExecute
-from tools.translate import _
+from poweremail.poweremail_template import get_value
 
 
 class PoweremailCampaign(osv.osv):
@@ -35,11 +34,11 @@ class PoweremailCampaign(osv.osv):
             context = {}
         if not isinstance(ids, list):
             ids = [ids]
-        total = []
-        sent = []
         campanyes = self.browse(cursor, uid, ids, context)
         res = {}
         for campanya in campanyes:
+            total = []
+            sent = []
             for line in campanya.reference_ids:
                 if line.state == 'sent':
                     sent.append(line.id)
@@ -70,25 +69,33 @@ class PoweremailCampaign(osv.osv):
         pm_camp_obj = self.pool.get('poweremail.campaign')
         pm_camp_line_obj = self.pool.get('poweremail.campaign.line')
         for camp_id in ids:
-            pm_camp_brw = pm_camp_obj.browse(cursor, uid, camp_id)
+            pm_camp_brw = pm_camp_obj.browse(cursor, uid, camp_id, context=context)
             #Borra línies existents de la campanya
             for line_id in pm_camp_brw.reference_ids:
                 pm_camp_line_obj.unlink(cursor, uid, line_id.id)
             #Recalcula linies aplicant el domain al model de dades
             domain = eval(pm_camp_brw.domain)
-            if pm_camp_brw.template_id and pm_camp_brw.template_id.model_int_name:
-                model = str(pm_camp_brw.template_id.model_int_name)
+            template = pm_camp_brw.template_id
+            if template and template.model_int_name:
+                model = str(template.model_int_name)
                 model_obj = self.pool.get(model)
-                res_ids = model_obj.search(cursor, uid, domain)
+                res_ids = model_obj.search(cursor, uid, domain, context=context)
+
                 #Crear campaign line per cada registre trobat
-                for id in res_ids:
-                    ref = model+','+str(id)
+                for record_id in res_ids:
+                    ref = '{},{}'.format(model, record_id)
+                    lang = get_value(
+                        cursor, uid, record_id, template.lang, template,
+                        context=context
+                    )
                     params = {
                         'campaign_id': camp_id,
                         'ref': ref,
                         'state': 'to_send',
+                        'lang': lang
                     }
                     pm_camp_line_obj.create(cursor, uid, params)
+        return True
 
     def send_emails(self, cursor, uid, ids, context):
         if not isinstance(ids, list):
