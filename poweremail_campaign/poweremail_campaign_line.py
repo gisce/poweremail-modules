@@ -27,20 +27,26 @@ class PoweremailCampaignLine(osv.osv):
         """
         if context is None:
             context = {}
-        data = self.read(cursor, uid, ids, ['ref'])
-        if not isinstance(data, list):
-            data = [data]
+        if not isinstance(ids, list):
+            ids = [ids]
+        line_vs = self.q(cursor, uid).read([
+            'ref', 'campaign_id.template_id'
+        ]).where([
+            ('id', 'in', ids)
+        ])
         ids_cbk = {}
         ctx = context.copy()
         ctx['pe_callback_origin_ids'] = {}
-        for i in data:
-            if not i['ref']:
+        for line_v in line_vs:
+            if not line_v['ref']:
                 continue
             meta = {}
-            ref = i['ref'].split(',')
-            ids_cbk[ref[0]] = ids_cbk.get(ref[0], []) + [int(ref[1])]
-            ctx['pe_callback_origin_ids'][int(ref[1])] = i['id']
-            ctx['meta'][int(ref[1])] = meta
+            model_name, record_id_str = line_v['ref'].split(',')
+            record_id = int(record_id_str)
+            ids_cbk[model_name] = ids_cbk.get(model_name, []) + [record_id]
+            ctx['pe_callback_origin_ids'][record_id] = line_v['id']
+            ctx['meta'][record_id] = meta
+            ctx['template_id'] = line_v['campaign_id.template_id']
         for model in ids_cbk:
             src = self.pool.get(model)
             try:
