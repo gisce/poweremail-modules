@@ -2,6 +2,7 @@
 
 from osv import osv, fields
 from poweremail.poweremail_template import get_value
+from tools import config
 
 
 class PoweremailCampaign(osv.osv):
@@ -92,12 +93,12 @@ class PoweremailCampaign(osv.osv):
                         'campaign_id': camp_id,
                         'ref': ref,
                         'state': 'to_send',
-                        'lang': lang
+                        'lang': lang != 'False' and lang or config.get('lang', 'en_US')
                     }
                     pm_camp_line_obj.create(cursor, uid, params)
         return True
 
-    def send_emails(self, cursor, uid, ids, context):
+    def send_emails(self, cursor, uid, ids, context=None):
         if not isinstance(ids, list):
             ids = [ids]
         pm_camp_line_obj = self.pool.get('poweremail.campaign.line')
