@@ -69,12 +69,13 @@ class PoweremailCampaign(osv.osv):
             ids = [ids]
         pm_camp_obj = self.pool.get('poweremail.campaign')
         pm_camp_line_obj = self.pool.get('poweremail.campaign.line')
+        mails_unics = set()
         for camp_id in ids:
             pm_camp_brw = pm_camp_obj.browse(cursor, uid, camp_id, context=context)
-            #Borra línies existents de la campanya
+            # Borra línies existents de la campanya
             for line_id in pm_camp_brw.reference_ids:
                 pm_camp_line_obj.unlink(cursor, uid, line_id.id)
-            #Recalcula linies aplicant el domain al model de dades
+            # Recalcula linies aplicant el domain al model de dades
             domain = eval(pm_camp_brw.domain)
             template = pm_camp_brw.template_id
             if template and template.model_int_name:
@@ -82,17 +83,28 @@ class PoweremailCampaign(osv.osv):
                 model_obj = self.pool.get(model)
                 res_ids = model_obj.search(cursor, uid, domain, context=context)
 
-                #Crear campaign line per cada registre trobat
+                # Crear campaign line per cada registre trobat
                 for record_id in res_ids:
                     ref = '{},{}'.format(model, record_id)
                     lang = get_value(
                         cursor, uid, record_id, template.lang, template,
                         context=context
                     )
+                    state = 'to_send'
+                    if pm_camp_brw.distinct_mails:
+                        email = get_value(
+                            cursor, uid, record_id, template.def_to, template,
+                            context=context
+                        )
+                        if email in mails_unics:
+                            state = 'avoid_duplicate'
+                        else:
+                            mails_unics.add(email)
+
                     params = {
                         'campaign_id': camp_id,
                         'ref': ref,
-                        'state': 'to_send',
+                        'state': state,
                         'lang': lang != 'False' and lang or config.get('lang', 'en_US')
                     }
                     pm_camp_line_obj.create(cursor, uid, params)
@@ -130,11 +142,13 @@ class PoweremailCampaign(osv.osv):
         'progress_sent': fields.function(_ff_sent, string='Progress Sent', type='float', method=True),
         'create_date': fields.datetime('Create Date', readonly=1),
         'template_obj': fields.function(_ff_object, string='Object', type='char', size=64, method=True, readonly=1),
-        'batch': fields.integer('Batch', help='Sends the indicated quantity of emails each time the "Send Emails" button is pressed. 0 to send all.')
+        'batch': fields.integer('Batch', help='Sends the indicated quantity of emails each time the "Send Emails" button is pressed. 0 to send all.'),
+        'distinct_mails': fields.boolean('Avoid same email', help='Check to avoid send repeated campaigns to the same email')
     }
 
     _defaults = {
         'domain': lambda *a: '[]',
+        'distinct_mails': lambda *a: False,
     }
 
 PoweremailCampaign()
