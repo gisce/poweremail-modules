@@ -23,7 +23,8 @@ class PoweremailCampaign(osv.osv):
             for line in campanya.reference_ids:
                 if line.mail_id:
                     created.append(line.id)
-                total.append(line.id)
+                if line.state != 'avoid_duplicate':
+                    total.append(line.id)
             if not total:
                 res[campanya.id] = 0.0
             else:
@@ -43,7 +44,8 @@ class PoweremailCampaign(osv.osv):
             for line in campanya.reference_ids:
                 if line.state == 'sent':
                     sent.append(line.id)
-                total.append(line.id)
+                if line.state != 'avoid_duplicate':
+                    total.append(line.id)
             if not total:
                 res[campanya.id] = 0.0
             else:
