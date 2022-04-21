@@ -105,7 +105,8 @@ class PoweremailCampaignLine(osv.osv):
     STATE_SELECTION = [('to_send', 'To Send'),
                        ('sending', 'Sending'),
                        ('sending_error', 'Sending Error'),
-                       ('sent', 'Sent')]
+                       ('sent', 'Sent'),
+                       ('avoid_duplicate', 'Avoid Duplicate')]
 
     _rec_name = 'campaign_id'
 
