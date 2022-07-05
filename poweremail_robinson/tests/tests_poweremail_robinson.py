@@ -4,6 +4,7 @@ from destral import testing
 from destral.transaction import Transaction
 
 class TestPoweremailRobinson(testing.OOTestCase):
+
     def test_ff_created(self):
         with Transaction().start(self.database) as txn:
             uid = txn.user
@@ -26,7 +27,8 @@ class TestPoweremailRobinson(testing.OOTestCase):
 
             record_id = imd_obj.get_object_reference(cursor, uid, 'poweremail_robinson', 'user_user')[1]
 
-            # Cridar el _generate_mailbox_item_from_template i com que he creat el robinson, el mailbox_id que retorna hauria de tenir com a folder el robinson
+            # Cridar el _generate_mailbox_item_from_template i com que he creat el robinson, el mailbox_id que retorna
+            # hauria de tenir com a folder el robinson
             mailbox_id = template_obj._generate_mailbox_item_from_template(cursor, uid, template_bwr, record_id)
 
             folder = mailbox_obj.read(cursor, uid, mailbox_id, ['folder'])['folder']
@@ -34,7 +36,8 @@ class TestPoweremailRobinson(testing.OOTestCase):
 
             robinson_obj.unlink(cursor, uid, robinson_id)
             template_bwr = template_obj.browse(cursor, uid, template_id)
-            # Cridar el _generate_mailbox_item_from_template i com que he creat el robinson, el mailbox_id que retorna hauria de tenir com a folder el robinson
+            # Cridar el _generate_mailbox_item_from_template i com que he creat el robinson, el mailbox_id que retorna
+            # hauria de tenir com a folder el robinson
             mailbox_id = template_obj._generate_mailbox_item_from_template(cursor, uid, template_bwr, record_id)
             folder = mailbox_obj.read(cursor, uid, mailbox_id, ['folder'])['folder']
             self.assertEqual(folder, 'drafts')

@@ -7,9 +7,11 @@ class PoweremailTemplates(osv.osv):
 
     def _generate_mailbox_item_from_template(self, cursor, uid, template, record_id, context=None):
         mailbox_obj = self.pool.get('poweremail.mailbox')
-        mailbox_id = super(PoweremailTemplates, self)._generate_mailbox_item_from_template(cursor, uid, template, record_id)
+        mailbox_id = super(PoweremailTemplates, self)._generate_mailbox_item_from_template(
+                                                        cursor, uid, template, record_id, context=context)
         mailbox_email = mailbox_obj.read(cursor, uid, mailbox_id, ['pem_to'], context)['pem_to']
-        # Comprovem si existeix un registre de poweremail_template_robinson amb el mateix email i la id del template (o template a null).
+        # Comprovem si existeix un registre de poweremail_template_robinson amb el mateix email i la id del template
+        # (o template a null).
         robinson_obj = self.pool.get('poweremail.template.robinson')
         search_params = [('template_id', '=', template.id), ('email', '=', mailbox_email)]
         robinson_ids_1 = robinson_obj.search(cursor, uid, search_params, context)
@@ -22,7 +24,7 @@ class PoweremailTemplates(osv.osv):
         return mailbox_id
 
     def check_outbox(self, cursor, uid, mailbox_id, context=None):
-        super_bool = super(PoweremailTemplates, self).check_outbox
+        super_bool = super(PoweremailTemplates, self).check_outbox(cursor, uid, mailbox_id, context=context)
         mailbox_obj = self.pool.get('poweremail.mailbox')
         folder = mailbox_obj.read(cursor, uid, mailbox_id, ['folder'], context=context)['folder']
         if folder == 'robinson' or not super_bool:
@@ -30,16 +32,18 @@ class PoweremailTemplates(osv.osv):
         else:
             return True
 
+
 PoweremailTemplates()
 
 
-class poweremail_template_robinson(osv.osv):
+class PoweremailTemplatRobinson(osv.osv):
 
     _name = 'poweremail.template.robinson'
 
     _columns = {
         'template_id': fields.many2one('poweremail.templates', 'Template'),
-        'email': fields.text('Email')
+        'email': fields.text('Email', required = True)
     }
 
-poweremail_template_robinson()
+
+PoweremailTemplatRobinson()
