@@ -7,11 +7,11 @@
   "category": "GISCEMaster",
   "depends": [
       "poweremail",
-      "poweremail_references",
+
   ],
   "init_xml": [],
   "demo_xml": [
-
+      "poweremail_robinson_demo.xml"
   ],
   "update_xml": [
 
