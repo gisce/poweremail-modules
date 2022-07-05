@@ -113,6 +113,8 @@ class PoweremailCampaign(osv.osv):
         return True
 
     def send_emails(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
         if not isinstance(ids, list):
             ids = [ids]
         pm_camp_line_obj = self.pool.get('poweremail.campaign.line')
