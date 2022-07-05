@@ -15,8 +15,8 @@ class TestPoweremailRobinson(testing.OOTestCase):
 
             imd_obj = self.openerp.pool.get('ir.model.data')
 
-            template_id = imd_obj.get_object_reference(cursor, uid, 'poweremail_robinson', 'default_template_poweremail')[1]
-            account_id = imd_obj.get_object_reference(cursor, uid, 'poweremail_robinson', 'info_energia_from_email')[1]
+            template_id = imd_obj.get_object_reference(cursor, uid, 'poweremail', 'default_template_poweremail')[1]
+            account_id = imd_obj.get_object_reference(cursor, uid, 'poweremail', 'info_energia_from_email')[1]
             #Escrivim un email a 'def_to' del template que és el que se li passara al mailbox a crear
             template_obj.write(cursor, uid, template_id, {'def_to': 'email@prova.com', 'enforce_from_account': account_id})
 
@@ -25,21 +25,22 @@ class TestPoweremailRobinson(testing.OOTestCase):
 
             template_bwr = template_obj.browse(cursor, uid, template_id)
 
-            record_id = imd_obj.get_object_reference(cursor, uid, 'poweremail_robinson', 'user_user')[1]
+            record_id = imd_obj.get_object_reference(cursor, uid, 'base', 'user_demo')[1]
 
             # Cridar el _generate_mailbox_item_from_template i com que he creat el robinson, el mailbox_id que retorna
             # hauria de tenir com a folder el robinson
             mailbox_id = template_obj._generate_mailbox_item_from_template(cursor, uid, template_bwr, record_id)
-
             folder = mailbox_obj.read(cursor, uid, mailbox_id, ['folder'])['folder']
             self.assertEqual(folder, 'robinson')
 
             robinson_obj.unlink(cursor, uid, robinson_id)
-            template_bwr = template_obj.browse(cursor, uid, template_id)
             # Cridar el _generate_mailbox_item_from_template i com que he creat el robinson, el mailbox_id que retorna
             # hauria de tenir com a folder el robinson
             mailbox_id = template_obj._generate_mailbox_item_from_template(cursor, uid, template_bwr, record_id)
             folder = mailbox_obj.read(cursor, uid, mailbox_id, ['folder'])['folder']
             self.assertEqual(folder, 'drafts')
 
-
+            robinson_obj.create(cursor, uid, {'email': 'email@prova.com'})
+            mailbox_id = template_obj._generate_mailbox_item_from_template(cursor, uid, template_bwr, record_id)
+            folder = mailbox_obj.read(cursor, uid, mailbox_id, ['folder'])['folder']
+            self.assertEqual(folder, 'robinson')
