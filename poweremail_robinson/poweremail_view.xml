@@ -1,12 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
 	<data>
+		<menuitem name="Email-template robinson filter" id="menu_poweremail_robinson_folder" parent="poweremail.menu_poweremail_administration_server" />
+
 		<record model="ir.ui.view" id="poweremail_robinson_tree">
-			<field name="name">poweremail.mailbox.robinsontree</field>
+			<field name="name">poweremail.robinson.tree</field>
+			<field name="model">poweremail.template.robinson</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Robinson entries">
+					<field name="template_id"/>
+					<field name="email"/>
+				</tree>
+			</field>
+		</record>
+		<record model="ir.ui.view" id="poweremail_robinson_form">
+			<field name="name">poweremail.robinson.form</field>
+			<field name="model">poweremail.template.robinson</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Robinson entry">
+					<field name="template_id"/>
+					<field name="email"/>
+				</form>
+			</field>
+		</record>
+        <record model="ir.actions.act_window" id="action_poweremail_robinson_tree">
+			<field name="name">Robinson entries</field>
+			<field name="res_model">poweremail.template.robinson</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form,tree</field>
+			<field name="view_id" ref="poweremail_robinson_tree"/>
+		</record>
+        <menuitem name="Robinson entries" id="menu_poweremail_robinson" parent="menu_poweremail_robinson_folder" action="action_poweremail_robinson_tree" />
+
+
+		<record model="ir.ui.view" id="robinson_mailbox_tree">
+			<field name="name">robinson.mailbox.tree</field>
 			<field name="model">poweremail.mailbox</field>
 			<field name="type">tree</field>
 			<field name="arch" type="xml">
-				<tree string="Power Email Robinson">
+				<tree string="Robinson mailbox">
 					<field name="pem_user"/>
 					<field name="pem_from" select="1" />
 					<field name="pem_to" select="1" />
@@ -17,15 +51,15 @@
 				</tree>
 			</field>
 		</record>
-        <record model="ir.actions.act_window" id="action_poweremail_robinson_tree_company">
-			<field name="name">Email Mailbox</field>
+        <record model="ir.actions.act_window" id="action_robinson_mailbox_company">
+			<field name="name">Robinson mailbox</field>
 			<field name="res_model">poweremail.mailbox</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">form,tree</field>
-			<field name="view_id" ref="poweremail_robinson_tree"/>
+			<field name="view_id" ref="robinson_mailbox_tree"/>
 			<field name="domain">[('folder', '=', 'robinson')]</field>
 			<field name="context">{'company':True}</field>
 		</record>
-        <menuitem name="Robinson" id="menu_poweremail_robinson_company" parent="poweremail.menu_poweremail_company" action="action_poweremail_robinson_tree_company" />
+        <menuitem name="Robinson" id="menu_poweremail_robinson_mailbox_company" parent="poweremail.menu_poweremail_company" action="action_robinson_mailbox_company" />
     </data>
 </openerp>
