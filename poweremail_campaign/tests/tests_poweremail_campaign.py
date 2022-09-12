@@ -215,7 +215,7 @@ class TestPoweremailCampaign(testing.OOTestCase):
 
                 except Exception as e:
                     pm_camp_line_obj.write(cursor, uid, line_id, {'state': 'sending_error', 'log': str(e) + "\n"}, context=context)
-                return True
+        return True
 
     @mock.patch('poweremail.poweremail_template.poweremail_templates.generate_mail')
     def test_send_email(self, mocked_function):
