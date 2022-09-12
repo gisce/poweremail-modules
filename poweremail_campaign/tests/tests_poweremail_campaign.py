@@ -11,29 +11,6 @@ from datetime import date
 from destral import testing
 from destral.transaction import Transaction
 
-class PoweremailTestMailbox(osv.osv):
-    _inherit = "poweremail.templates"
-
-    def generate_mail(self, cursor, uid, template_id, record_ids, context=None):
-        pm_mb_obj = self.pool.get('poweremail.mailbox')
-        pm_tmp_obj = self.pool.get('poweremail.templates')
-        account_obj = self.pool.get('poweremail.core_accounts')
-
-        reference = context['src_model']+','+str(context['src_rec_id'])
-
-        #Creem el mailbox amb la linia
-
-        vals_mailbox = {
-            'pem_account_id': account_obj.search(cursor, uid, [])[0],
-            'pem_subject': "Lorem Ipsum",
-            'reference': reference,
-        }
-        pm_mb_obj.create(cursor, uid, vals_mailbox, context=context)
-
-        return True
-
-PoweremailTestMailbox()
-
 class TestPoweremailCampaign(testing.OOTestCase):
     def test_ff_created(self):
         with Transaction().start(self.database) as txn:
@@ -198,10 +175,54 @@ class TestPoweremailCampaign(testing.OOTestCase):
 
                 self.assertEqual(num_linies_post, novesLinies)
 
-    def test_send_email(self):
+    def generate_mail_test(self, cursor, uid, ids, context=None):
+        pm_camp_line_obj = self.openerp.pool.get('poweremail.campaign.line')
+        pm_camp_obj = self.openerp.pool.get('poweremail.campaign')
+        pm_mb_obj = self.openerp.pool.get('poweremail.mailbox')
+        account_obj = self.openerp.pool.get('poweremail.core_accounts')
+        for camp_id in ids:
+            campaign_v = pm_camp_obj.read(
+                cursor, uid, camp_id, ['template_id', 'batch'],
+                context=context
+            )
+            dmn = [
+                ('campaign_id', '=', camp_id),
+                ('state', 'in', ('to_send', 'sending_error'))
+            ]
+            line_ids = pm_camp_line_obj.search(
+                cursor, uid, dmn, limit=campaign_v['batch'] or None,
+                context=context
+            )
+            for line_id in line_ids:
+                line_v = pm_camp_line_obj.read(cursor, uid, line_id, ['state', 'mail_id'])
+                if line_v['state'] in ('sent', 'sending') and line_v['mail_id']:
+                    return
+                try:
+                    context['src_rec_id'] = line_id
+                    context['src_model'] = pm_camp_line_obj._name
+                    pm_camp_line_obj.write(cursor, uid, line_id, {'state': 'sending'}, context=context)
+                    # generate_mail
+                    reference = context['src_model'] + ',' + str(context['src_rec_id'])
+
+                    # Creem el mailbox amb la linia
+
+                    vals_mailbox = {
+                        'pem_account_id': account_obj.search(cursor, uid, [])[0],
+                        'pem_subject': "Lorem Ipsum",
+                        'reference': reference,
+                    }
+                    pm_mb_obj.create(cursor, uid, vals_mailbox, context=context)
+
+                except Exception as e:
+                    pm_camp_line_obj.write(cursor, uid, line_id, {'state': 'sending_error', 'log': str(e) + "\n"}, context=context)
+        return True
+
+    @mock.patch('poweremail.poweremail_template.poweremail_templates.generate_mail')
+    def test_send_email(self, mocked_function):
         with Transaction().start(self.database) as txn:
             uid = txn.user
             cursor = txn.cursor
+
             pm_camp_line_obj = self.openerp.pool.get('poweremail.campaign.line')
             pm_camp_obj = self.openerp.pool.get('poweremail.campaign')
             pm_tmp_obj = self.openerp.pool.get('poweremail.templates')
@@ -223,6 +244,9 @@ class TestPoweremailCampaign(testing.OOTestCase):
                 'ref': str('res.partner,1')
             }
             pm_camp_line_id = pm_camp_line_obj.create(cursor, uid, vals_pm_camp_line)
+
+            mocked_function.return_value = self.generate_mail_test(cursor, uid, [pm_camp_id], context={})
+
             with PatchNewCursors():
                 pm_camp_obj.send_emails(cursor, uid, [pm_camp_id], context={})
             dades_linia = pm_camp_line_obj.read(cursor, uid, pm_camp_line_id, ['mail_id', 'state'])
