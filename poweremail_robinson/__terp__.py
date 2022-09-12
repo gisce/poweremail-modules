@@ -7,13 +7,12 @@
   "category": "GISCEMaster",
   "depends": [
       "poweremail",
-
   ],
   "init_xml": [],
   "demo_xml": [
   ],
   "update_xml": [
-
+    "poweremail_view.xml"
   ],
   "active": False,
   "installable": True
