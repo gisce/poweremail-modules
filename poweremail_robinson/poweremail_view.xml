@@ -2,7 +2,6 @@
 <openerp>
 	<data>
 		<menuitem name="Email-template robinson filter" id="menu_poweremail_robinson_folder" parent="poweremail.menu_poweremail_administration_server" />
-
 		<record model="ir.ui.view" id="poweremail_robinson_tree">
 			<field name="name">poweremail.robinson.tree</field>
 			<field name="model">poweremail.template.robinson</field>

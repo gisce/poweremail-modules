@@ -6,20 +6,32 @@ class PoweremailTemplates(osv.osv):
     _inherit = 'poweremail.templates'
 
     def _generate_mailbox_item_from_template(self, cursor, uid, template, record_id, context=None):
-        mailbox_obj = self.pool.get('poweremail.mailbox')
-        mailbox_id = super(PoweremailTemplates, self)._generate_mailbox_item_from_template(
-                                                        cursor, uid, template, record_id, context=context)
-        mailbox_email = mailbox_obj.read(cursor, uid, mailbox_id, ['pem_to'], context=context)['pem_to']
-        # Comprovem si existeix un registre de poweremail_template_robinson amb el mateix email i la id del template
-        # (o template a null).
         robinson_obj = self.pool.get('poweremail.template.robinson')
-        search_params = [('template_id', '=', template.id), ('email', '=', mailbox_email)]
-        robinson_ids_1 = robinson_obj.search(cursor, uid, search_params, context=context)
-        search_params = [('template_id', '=', False), ('email', '=', mailbox_email)]
-        robinson_ids_2 = robinson_obj.search(cursor, uid, search_params, context=context)
-        robinson_ids = robinson_ids_1 + robinson_ids_2
+        mailbox_obj = self.pool.get('poweremail.mailbox')
+
+        mailbox_id = super(PoweremailTemplates, self)._generate_mailbox_item_from_template(
+            cursor, uid, template, record_id, context=context
+        )
+        mailbox_v = mailbox_obj.read(cursor, uid, mailbox_id, ['pem_to'], context=context)
+        mails = mailbox_v['pem_to'].split(',') if mailbox_v['pem_to'] else []
+
+        mailbox_wv = {'folder': 'robinson'}
+        robinson_ids = []
+        for mail in mails:
+            # Comprovem si existeix un registre de poweremail_template_robinson
+            # amb el mateix email i la id del template (o template a null).
+
+            dmn = [('template_id', '=', False), ('email', '=', mail)]
+            robinson_ids = robinson_obj.search(cursor, uid, dmn, context=context)
+            if robinson_ids:
+                break
+            dmn = [('template_id', '=', template.id), ('email', '=', mail)]
+            robinson_ids = robinson_obj.search(cursor, uid, dmn, context=context)
+            if robinson_ids:
+                break
+
         if robinson_ids:
-            mailbox_obj.write(cursor, uid, [mailbox_id], {'folder': 'robinson'}, context=context)
+            mailbox_obj.write(cursor, uid, [mailbox_id], mailbox_wv, context=context)
 
         return mailbox_id
 
@@ -43,7 +55,7 @@ class PoweremailTemplatRobinson(osv.osv):
 
     _columns = {
         'template_id': fields.many2one('poweremail.templates', 'Template'),
-        'email': fields.text('Email', required = True)
+        'email': fields.char('Email', size=128, required=True)
     }
 
 
