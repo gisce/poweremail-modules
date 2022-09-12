@@ -26,6 +26,6 @@
 			<field name="domain">[('folder', '=', 'robinson')]</field>
 			<field name="context">{'company':True}</field>
 		</record>
-        <menuitem name="Error" id="menu_poweremail_robinson_company" parent="menu_poweremail_company" action="action_poweremail_robinson_tree_company" />
+        <menuitem name="Robinson" id="menu_poweremail_robinson_company" parent="menu_poweremail_company" action="action_poweremail_robinson_tree_company" />
     </data>
 </openerp>
