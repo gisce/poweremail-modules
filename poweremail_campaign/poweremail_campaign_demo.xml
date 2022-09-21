@@ -75,11 +75,11 @@ un mort de gana.
 		</record>
 
         <record model="poweremail.core_accounts" id="default_core_accounts">
-            <field name="email_id">info@somenergia.coop</field>
+            <field name="email_id">info@demo.com</field>
             <field name="company">yes</field>
             <field name="smtpserver">test.com</field>
             <field name="send_pref">html</field>
-            <field name="name">Info-fiscal Som Energia</field>
+            <field name="name">Info de demo</field>
             <field name="state">approved</field>
             <field name="smtpport">587</field>
         </record>
