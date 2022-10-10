@@ -107,6 +107,23 @@ class PoweremailCore(osv.osv):
             body=body_html,
             params=params
         )
+
+        sms_dict = context.get('send_sms', False)
+        if sms_dict:
+            name = sms_dict.keys()[0]
+            phone = sms_dict[name]
+            response = client.create_SMS(
+                [document_path],
+                {
+                    'name': name,
+                    'phone': phone
+                },
+                '',
+                {
+                    'type': 'open_document'
+                }
+            )
+
         if "id" in response and context.get("poweremail_id"):
             self.pool.get("poweremail.mailbox").write(cr, uid, context.get("poweremail_id"), {
                 'certificat_signature_id': response.get("id"),
