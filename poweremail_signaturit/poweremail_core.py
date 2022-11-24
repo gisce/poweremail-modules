@@ -36,7 +36,7 @@ class PoweremailCore(osv.osv):
                 html = html.replace('\n', '<br/>')
             return html
 
-        client = get_signaturit_client()
+        client = self.pool.get("poweremail.mailbox").get_signaturit_client(cr, uid, context.get("poweremail_id"), context=context)
         if body is None:
             body = {}
         if context is None:

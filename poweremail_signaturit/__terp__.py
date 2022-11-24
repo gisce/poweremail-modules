@@ -9,6 +9,7 @@
         'base',
         'base_extended',
         'poweremail_certificat',
+        'poweremail_references',
     ],
     "init_xml": [],
     "demo_xml": [],
