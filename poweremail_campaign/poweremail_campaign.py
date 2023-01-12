@@ -10,7 +10,7 @@ class PoweremailCampaign(osv.osv):
     _name = 'poweremail.campaign'
     _description = "Email Campaign"
 
-    def _ff_created(self, cursor, uid, ids, field_name, arg, context=None):
+    def _ff_created_sent_object(self, cursor, uid, ids, field_name, arg, context=None):
         if context is None:
             context = {}
         if not isinstance(ids, list):
@@ -18,52 +18,42 @@ class PoweremailCampaign(osv.osv):
         campanyes = self.browse(cursor, uid, ids, context=context)
         res = {}
         for campanya in campanyes:
-            total = []
-            created = []
-            for line in campanya.reference_ids:
-                if line.mail_id:
-                    created.append(line.id)
-                if line.state != 'avoid_duplicate':
-                    total.append(line.id)
-            if not total:
-                res[campanya.id] = 0.0
-            else:
-                res[campanya.id] = (float(len(created)) / float(len(total))) * 100
-        return res
+            lines_obj = self.pool.get('poweremail.campign.line')
+            lines_q = lines_obj.q(cursor, uid)
+            created_data = lines_q.read(
+                ['id'],
+                only_active=False
+            ).where(
+                [('mail_id', '==', 'true'), ('campaign_id', '==', campanya.id)]
+            )
+            sent_data = lines_q.read(
+                ['id'],
+                only_active=False
+            ).where(
+                [('state', '==', 'sent'), ('campaign_id', '==', campanya.id)]
+            )
+            total_data = lines_q.read(
+                ['id'],
+                only_active=False
+            ).where(
+                [('state', '!=', 'avoid_duplicate'), ('campaign_id', '==', campanya.id)]
+            )
+            tempval = str(campanya.template_id.object_name.model)
+            prog_created = (float(len(created_data)) / float(len(total_data))) * 100
+            prog_sent = (float(len(sent_data)) / float(len(total_data))) * 100
 
-    def _ff_sent(self, cursor, uid, ids, field_name, arg, context=None):
-        if context is None:
-            context = {}
-        if not isinstance(ids, list):
-            ids = [ids]
-        campanyes = self.browse(cursor, uid, ids, context)
-        res = {}
-        for campanya in campanyes:
-            total = []
-            sent = []
-            for line in campanya.reference_ids:
-                if line.state == 'sent':
-                    sent.append(line.id)
-                if line.state != 'avoid_duplicate':
-                    total.append(line.id)
-            if not total:
-                res[campanya.id] = 0.0
-            else:
-                res[campanya.id] = (float(len(sent)) / float(len(total))) * 100
-        return res
-
-    def _ff_object(self, cursor, uid, ids, field_name, arg, context=None):
-        if context is None:
-            context = {}
-        if not isinstance(ids, list):
-            ids = [ids]
-        campanyes = self.browse(cursor, uid, ids, context)
-        res = {}
-        for campanya in campanyes:
             if not campanya.template_id or not campanya.template_id.object_name.model:
-                res[campanya.id] = ""
-            else:
-                res[campanya.id] = str(campanya.template_id.object_name.model)
+                tempval = ""
+
+            if not total_data:
+                prog_created = 0.0
+                prog_sent = 0.0
+
+            res[campanya.id] = {
+                'progress_created': prog_created,
+                'progress_sent': prog_sent,
+                'template_obj': tempval
+            }
         return res
 
     def update_linies_campanya(self, cursor, uid, ids, context=None):
@@ -142,10 +132,10 @@ class PoweremailCampaign(osv.osv):
         'template_id': fields.many2one('poweremail.templates', 'Template E-mail', required=True),
         'name': fields.char('Name', size=64, required=True),
         'domain': fields.text('Filter Objects', size=256, required=True),
-        'progress_created': fields.function(_ff_created, string='Progress Created', type='float', method=True),
-        'progress_sent': fields.function(_ff_sent, string='Progress Sent', type='float', method=True),
+        'progress_created': fields.function(_ff_created_sent_object, string='Progress Created', type='float', method=True),
+        'progress_sent': fields.function(_ff_created_sent_object, string='Progress Sent', type='float', method=True),
         'create_date': fields.datetime('Create Date', readonly=1),
-        'template_obj': fields.function(_ff_object, string='Object', type='char', size=64, method=True, readonly=1),
+        'template_obj': fields.function(_ff_created_sent_object, string='Object', type='char', size=64, method=True, readonly=1),
         'batch': fields.integer('Batch', help='Sends the indicated quantity of emails each time the "Send Emails" button is pressed. 0 to send all.'),
         'distinct_mails': fields.boolean('Avoid same email', help='Check to avoid send repeated campaigns to the same email')
     }
