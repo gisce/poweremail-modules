@@ -24,19 +24,19 @@ class PoweremailCampaign(osv.osv):
                 ['id'],
                 only_active=False
             ).where(
-                [('mail_id', '==', 'true'), ('campaign_id', '==', campanya.id)]
+                [('mail_id', '!=', False), ('campaign_id', '=', campanya.id)]
             )
             sent_data = lines_q.read(
                 ['id'],
                 only_active=False
             ).where(
-                [('state', '==', 'sent'), ('campaign_id', '==', campanya.id)]
+                [('state', '=', 'sent'), ('campaign_id', '=', campanya.id)]
             )
             total_data = lines_q.read(
                 ['id'],
                 only_active=False
             ).where(
-                [('state', '!=', 'avoid_duplicate'), ('campaign_id', '==', campanya.id)]
+                [('state', '!=', 'avoid_duplicate'), ('campaign_id', '=', campanya.id)]
             )
             tempval = str(campanya.template_id.object_name.model)
             prog_created = (float(len(created_data)) / float(len(total_data))) * 100
@@ -132,10 +132,10 @@ class PoweremailCampaign(osv.osv):
         'template_id': fields.many2one('poweremail.templates', 'Template E-mail', required=True),
         'name': fields.char('Name', size=64, required=True),
         'domain': fields.text('Filter Objects', size=256, required=True),
-        'progress_created': fields.function(_ff_created_sent_object, string='Progress Created', type='float', method=True),
-        'progress_sent': fields.function(_ff_created_sent_object, string='Progress Sent', type='float', method=True),
+        'progress_created': fields.function(_ff_created_sent_object, multi='barra_progres', string='Progress Created', type='float', method=True),
+        'progress_sent': fields.function(_ff_created_sent_object, multi='barra_progres', string='Progress Sent', type='float', method=True),
         'create_date': fields.datetime('Create Date', readonly=1),
-        'template_obj': fields.function(_ff_created_sent_object, string='Object', type='char', size=64, method=True, readonly=1),
+        'template_obj': fields.function(_ff_created_sent_object, multi='barra_progres', string='Object', type='char', size=64, method=True, readonly=1),
         'batch': fields.integer('Batch', help='Sends the indicated quantity of emails each time the "Send Emails" button is pressed. 0 to send all.'),
         'distinct_mails': fields.boolean('Avoid same email', help='Check to avoid send repeated campaigns to the same email')
     }
