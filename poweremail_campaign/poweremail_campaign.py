@@ -39,16 +39,17 @@ class PoweremailCampaign(osv.osv):
                 [('state', '!=', 'avoid_duplicate'), ('campaign_id', '=', campanya.id)]
             )
             tempval = str(campanya.template_id.object_name.model)
-            prog_created = (float(len(created_data)) / float(len(total_data))) * 100
-            prog_sent = (float(len(sent_data)) / float(len(total_data))) * 100
+            if not total_data:
+                prog_created = 0.0
+                prog_sent = 0.0
+            else:
+                prog_created = (float(len(created_data)) / float(len(total_data))) * 100
+                prog_sent = (float(len(sent_data)) / float(len(total_data))) * 100
 
             if not campanya.template_id or not campanya.template_id.object_name.model:
                 tempval = ""
 
-            if not total_data:
-                prog_created = 0.0
-                prog_sent = 0.0
-
+            
             res[campanya.id] = {
                 'progress_created': prog_created,
                 'progress_sent': prog_sent,
