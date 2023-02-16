@@ -18,7 +18,7 @@ class PoweremailCampaign(osv.osv):
         campanyes = self.browse(cursor, uid, ids, context=context)
         res = {}
         for campanya in campanyes:
-            lines_obj = self.pool.get('poweremail.campign.line')
+            lines_obj = self.pool.get('poweremail.campaign.line')
             lines_q = lines_obj.q(cursor, uid)
             created_data = lines_q.read(
                 ['id'],
@@ -60,31 +60,39 @@ class PoweremailCampaign(osv.osv):
     def update_linies_campanya(self, cursor, uid, ids, context=None):
         if not isinstance(ids, list):
             ids = [ids]
+        template_o = self.pool.get('poweremail.templates')
         pm_camp_obj = self.pool.get('poweremail.campaign')
+        pm_camp_q = pm_camp_obj.q(cursor, uid)
         pm_camp_line_obj = self.pool.get('poweremail.campaign.line')
+        pm_camp_line_q = pm_camp_line_obj.q(cursor, uid)
         mails_unics = set()
         for camp_id in ids:
-            pm_camp_brw = pm_camp_obj.browse(cursor, uid, camp_id, context=context)
+            pm_camp_vs = pm_camp_q.read(['domain', 'template_id', 'distinct_mails']).where([('id', '=', camp_id)])[0]
+            line_vs = pm_camp_line_q.read(['id']).where([('campaign_id', '=', camp_id)])
             # Borra línies existents de la campanya
-            for line_id in pm_camp_brw.reference_ids:
-                pm_camp_line_obj.unlink(cursor, uid, line_id.id)
+            for line_v in line_vs:
+                pm_camp_line_obj.unlink(cursor, uid, line_v['id'], context=context)
             # Recalcula linies aplicant el domain al model de dades
-            domain = eval(pm_camp_brw.domain)
-            template = pm_camp_brw.template_id
-            if template and template.model_int_name:
+            domain = eval(pm_camp_vs['domain'])
+            template_id = pm_camp_vs['template_id']
+            if not template_id:
+                continue
+            template = template_o.browse(cursor, uid, template_id, context=context)
+            if template.model_int_name:
                 model = str(template.model_int_name)
                 model_obj = self.pool.get(model)
                 res_ids = model_obj.search(cursor, uid, domain, context=context)
 
                 # Crear campaign line per cada registre trobat
-                for record_id in res_ids:
+                from tqdm import tqdm
+                for record_id in tqdm(res_ids):
                     ref = '{},{}'.format(model, record_id)
                     lang = get_value(
                         cursor, uid, record_id, template.lang, template,
                         context=context
                     )
                     state = 'to_send'
-                    if pm_camp_brw.distinct_mails:
+                    if pm_camp_vs['distinct_mails']:
                         email = get_value(
                             cursor, uid, record_id, template.def_to, template,
                             context=context
