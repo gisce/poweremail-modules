@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_poweremail_core_api_info_form" model="ir.ui.view">
+            <field name="name">poweremail.core.api.info.form</field>
+            <field name="model">poweremail.core_accounts</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_core_accounts_form"/>
+            <field name="arch" type="xml">
+                <page string="security" position="after">
+                    <page string="Api token">
+                        <field name="smtp_auth_login_id" colspan="4" select="1"/>
+                        <field name="imap_auth_login_id" colspan="4" select="1"/>
+                    </page>
+                </page>
+            </field>
+        </record>
+    </data>
+</openerp>
