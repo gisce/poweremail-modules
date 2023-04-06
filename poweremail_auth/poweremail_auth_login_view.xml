@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_poweremail_auth_login_tree">
+            <field name="name">poweremail.auth.login.tree</field>
+            <field name="model">poweremail.auth.login</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Auth login">
+                    <field name="auth_type" select="1"/>
+                    <field name="auth_api_id" select="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista form dels planificadors -->
+        <record id="view_poweremail_auth_login_form" model="ir.ui.view">
+            <field name="name">poweremail.auth.login.form</field>
+            <field name="model">poweremail.auth.login</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Auth login">
+
+                    <group col="4" colspan="4">
+                        <field name="auth_type"/>
+                        <field name="auth_api_id"/>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <!-- Botó menú per veure la llista de planificadors -->
+        <record model="ir.actions.act_window" id="action_poweremail_auth_login_tree">
+            <field name="name">Auth login</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">poweremail.auth.login</field>
+            <field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_poweremail_auth_login_tree"/>
+        </record>
+
+        <menuitem
+                name="Auth Login"
+                id="menu_poweremail_auth_login"
+                parent="poweremail.menu_poweremail_configuration_server"
+                action="action_poweremail_auth_login_tree"
+                groups="poweremail.res_groups_pemanager"
+        />
+
+    </data>
+</openerp>
