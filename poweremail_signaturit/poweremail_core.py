@@ -88,7 +88,8 @@ class PoweremailCore(osv.osv):
                 })
 
         # Certified email type
-        params['type'] = "open_document"
+        request_type = self.pool.get("res.config").get(cr, uid, "signaturit_email_request_type", "open_document")
+        params['type'] = request_type
 
         # Attachments
         documents = []
