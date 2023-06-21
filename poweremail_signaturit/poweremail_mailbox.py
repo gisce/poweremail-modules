@@ -106,7 +106,7 @@ class PoweremailMailbox(osv.osv):
         return res
 
     _columns = {
-        'certificat_state': fields.selection(_get_certificat_states, 'Estat del mail certificat'),
+        'certificat_state': fields.selection(_get_certificat_states, 'Estat del mail certificat', size=50),
         'certificat_signature_id': fields.char("Signatureit ID", size=64)
     }
 
