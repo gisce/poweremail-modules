@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_poweremail_source_form">
+            <field name="name">poweremail.templates.form</field>
+            <field name="model">poweremail.templates</field>
+            <field name="inherit_id" ref="poweremail.poweremail_template_form"/>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@string='Advanced']" position="after">
+                    <page string="Source">
+                         <field name="source_ids" colspan="2"/>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
