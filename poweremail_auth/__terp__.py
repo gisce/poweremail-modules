@@ -2,7 +2,7 @@
 {
     "name": "Gestión de API's",
     "description": """Añade EP's de poweremail API""",
-    "version": "23.6.0",
+    "version": "23.9.0",
     "author": "GISCE",
     "category": "Misc",
     "depends": [

@@ -2,7 +2,7 @@
 {
   "name": "PowerEmail Campaign",
   "description": """PowerEmail Sync Templates""",
-  "version": "23.6.0",
+  "version": "23.9.0",
   "author": "GISCE",
   "category": "GISCEMaster",
   "depends": [
