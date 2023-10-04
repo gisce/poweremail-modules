@@ -2,7 +2,7 @@
 {
   "name": "PowerEmail Campaign",
   "description": """PowerEmail Campaign Manager""",
-  "version": "23.6.0",
+  "version": "23.9.0",
   "author": "GISCE",
   "category": "GISCEMaster",
   "depends": [
