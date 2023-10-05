@@ -88,7 +88,8 @@ class PoweremailCore(osv.osv):
                 })
 
         # Certified email type
-        params['type'] = "open_document"
+        request_type = self.pool.get("res.config").get(cr, uid, "signaturit_email_request_type", "open_document")
+        params['type'] = request_type
 
         # Attachments
         documents = []
@@ -107,11 +108,16 @@ class PoweremailCore(osv.osv):
             body=body_html,
             params=params
         )
+        res = False
         if "id" in response and context.get("poweremail_id"):
             self.pool.get("poweremail.mailbox").write(cr, uid, context.get("poweremail_id"), {
                 'certificat_signature_id': response.get("id"),
                 'certificat_state': "email_processed"
             })
-        return "id" in response
+            res = True
+        if "error" in response:
+            res = response.get('error_message', response['error'])
+        return res
+
 
 PoweremailCore()

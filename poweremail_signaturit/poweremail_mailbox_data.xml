@@ -15,5 +15,21 @@
 * document_downloaded - The document has been downloaded.
 </field>
         </record>
+        <record model="res.config" id="signaturit_email_request_type" forcecreate="1">
+          <field name="name">signaturit_email_request_type</field>
+          <field name="value">open_document</field>
+          <field name="description">
+              Defineix el tipus de solicitud d'email que s'enviara a signaturit.
+              Depenent tipus que escollim el client veure el email en un format diferent.
+              Opcions posibles:
+              * delivery - Send the email as it is certifying the delivery process.
+              * open_document -
+                 Send a modified version of the email with a button that redirects the user to our platform to open the PDF attachments.
+                 With this method, you can track when the user opens the attached files.
+                 Note: This method only supports PDF documents to be attached.
+              * open_every_document - This type works like the open_document type but allows to track the opening of every PDF file in emails with multiple attachments.
+              * open_email - With this method, you can track when the user opens the email.
+          </field>
+        </record>
     </data>
 </openerp>
