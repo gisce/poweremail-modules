@@ -1,4 +1,4 @@
-name: TESTS_POWEREMAIL_MODULES
+name: Run tests
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ env:
 jobs:
   tests:
     if: ${{ (github.event_name == 'pull_request' && github.event.label.name == 'to be merged') }}
-    runs-on: [self-hosted, Replicante]
+    runs-on: [self-hosted, Buda]
     strategy:
       fail-fast: false
       matrix:
@@ -44,7 +44,7 @@ jobs:
         with:
           path: src/erp
           repository: gisce/erp
-          token: ${{ secrets.MASTER_GH_TOKEN }}
+          token: ${{ secrets.RO_GITHUB_ACTIONS_REPOS }}
 
       - name: Prepare virtualenv Python ${{ matrix.python-version }}
         env:
@@ -76,7 +76,7 @@ jobs:
         id: run_tests
         env:
           BUILD_ID: ${{ steps.build_id.outputs.id }}
-          GITHUB_TOKEN: ${{ secrets.MASTER_GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RO_GITHUB_ACTIONS_REPOS }}
           ROOT_DIR_SRC: ${{ github.workspace }}/src
           ADDONS_PATH: ${{ github.workspace }}/src/erp/server/bin/addons
         run: |
@@ -112,3 +112,4 @@ jobs:
           name: "Mergeable"
           status: "${{ steps.run_tests.outcome }}"
           url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
