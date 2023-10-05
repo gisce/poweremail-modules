@@ -1,0 +1,1 @@
+from . import wizard_load_poweremail_template
