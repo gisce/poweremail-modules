@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 {
   "name": "PowerEmail Campaign",
-  "description": """PowerEmail Campaign Manager""",
+  "description": """PowerEmail Sync Templates""",
   "version": "23.9.0",
   "author": "GISCE",
   "category": "GISCEMaster",
   "depends": [
       "poweremail",
-      "poweremail_references",
   ],
   "init_xml": [],
-  "demo_xml": [
-    "poweremail_campaign_demo.xml",
-  ],
+  "demo_xml": [],
   "update_xml": [
-      "wizard/wizard_poweremail_campaign.xml",
-      "poweremail_campaign_view.xml",
-      "poweremail_campaign_line_view.xml",
+      "poweremail_template_view.xml",
+      "poweremail_templates_source_view.xml",
+      "wizard/wizard_load_poweremail_template.xml",
       "security/ir.model.access.csv",
   ],
   "active": False,

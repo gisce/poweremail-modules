@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="poweremail_templates_source_tree">
+            <field name="name">poweremail.templates.source.tree</field>
+            <field name="model">poweremail.templates.source</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Power Email Templates Source">
+                    <field name="template_id" select="1"/>
+                    <field name="lang" select="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_templates_source_form">
+            <field name="name">poweremail.templates.source.form</field>
+            <field name="model">poweremail.templates.source</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Power Email Templates Source">
+                    <field name="template_id" colspan="4" required="1"/>
+                    <field name="source" colspan="2" required="1"/>
+                    <field name="lang" colspan="2" widget="selection" required="1"/>
+                </form>
+            </field>
+        </record>
+    </data>
+</openerp>
