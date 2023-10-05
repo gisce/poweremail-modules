@@ -20,7 +20,7 @@ env:
 jobs:
   tests:
     if: ${{ (github.event_name == 'pull_request' && github.event.label.name == 'to be merged') }}
-    runs-on: [self-hosted, Replicante]
+    runs-on: [self-hosted, Buda]
     strategy:
       fail-fast: false
       matrix:
