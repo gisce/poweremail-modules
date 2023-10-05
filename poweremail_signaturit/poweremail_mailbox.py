@@ -97,6 +97,7 @@ class PoweremailMailbox(osv.osv):
             ('email_delivered', _(u"Email enviat")),
             ('email_opened', _(u"Email obert per el receptor")),
             ('email_bounced', _(u"No s'ha pogut enviar el email")),
+            ('certification_completed', 'certification_completed'), # Posem el mateix fins que a la documentació hi hagi alguna cosa
             ('email_deferred', _(u"No s'ha pogut enviar el email, es fara un reintent")),
             ('documents_opened', _(u"Vista previa dels documents del email oberta")),
             ('document_opened', _(u"Documents del email oberts")),
@@ -105,7 +106,7 @@ class PoweremailMailbox(osv.osv):
         return res
 
     _columns = {
-        'certificat_state': fields.selection(_get_certificat_states, 'Estat del mail certificat'),
+        'certificat_state': fields.selection(_get_certificat_states, 'Estat del mail certificat', size=50),
         'certificat_signature_id': fields.char("Signatureit ID", size=64)
     }
 
