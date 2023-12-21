@@ -77,7 +77,7 @@ class PoweremailCampaignLine(osv.osv):
     def send_mail_from_line(self, cursor, uid, line_id, template, context=None):
         pm_template_obj = TransactionExecute(cursor.dbname, uid, 'poweremail.templates')
         self_obj = TransactionExecute(cursor.dbname, uid, 'poweremail.campaign.line')
-        line_v = self.read(cursor, uid, line_id, ['state', 'mail_id'])
+        line_v = self.read(cursor, uid, line_id, ['state', 'mail_id', 'reference_extra_data'])
         if line_v['state'] in ('sent', 'sending') and line_v['mail_id']:
             return
         ref_aux = self.read(cursor, uid, line_id, ['ref'])['ref']
@@ -85,6 +85,8 @@ class PoweremailCampaignLine(osv.osv):
         try:
             context['src_rec_id'] = line_id
             context['src_model'] = self._name
+            if line_v.get('reference_extra_data'):
+                context['reference_extra_data'] = line_v['reference_extra_data']
             self_obj.write(line_id, {'state': 'sending'})
             pm_template_obj.generate_mail(template, id_aux, context=context)
         except Exception as e:
