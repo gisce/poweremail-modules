@@ -140,6 +140,7 @@ class PoweremailCampaign(osv.osv):
 
     _columns = {
         'reference_ids': fields.one2many('poweremail.campaign.line', 'campaign_id', 'Campaign Line'),
+        'reference_extra_data': fields.text('Extra data', widget='json')
     }
 
 
