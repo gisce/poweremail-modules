@@ -127,6 +127,7 @@ class PoweremailCampaignLine(osv.osv):
 
     _defaults = {
         'state': lambda *a: 'to_send',
+        'reference_extra_data': fields.text('Extra data', widget='json')
     }
 
 
@@ -139,8 +140,7 @@ class PoweremailCampaign(osv.osv):
     _inherit = 'poweremail.campaign'
 
     _columns = {
-        'reference_ids': fields.one2many('poweremail.campaign.line', 'campaign_id', 'Campaign Line'),
-        'reference_extra_data': fields.text('Extra data', widget='json')
+        'reference_ids': fields.one2many('poweremail.campaign.line', 'campaign_id', 'Campaign Line')
     }
 
 
