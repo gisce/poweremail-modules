@@ -146,8 +146,7 @@ class PoweremailCampaign(osv.osv):
         'create_date': fields.datetime('Create Date', readonly=1),
         'template_obj': fields.function(_ff_created_sent_object, multi='barra_progres', string='Object', type='char', size=64, method=True, readonly=1),
         'batch': fields.integer('Batch', help='Sends the indicated quantity of emails each time the "Send Emails" button is pressed. 0 to send all.'),
-        'distinct_mails': fields.boolean('Avoid same email', help='Check to avoid send repeated campaigns to the same email'),
-        'reference_extra_data': fields.text('Extra data', widget='json')
+        'distinct_mails': fields.boolean('Avoid same email', help='Check to avoid send repeated campaigns to the same email')
     }
 
     _defaults = {
