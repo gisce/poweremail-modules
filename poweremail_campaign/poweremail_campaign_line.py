@@ -125,7 +125,7 @@ class PoweremailCampaignLine(osv.osv):
         'state': fields.selection(STATE_SELECTION, 'State'),
         'log': fields.text('Line Log'),
         'lang': fields.selection(_lang_get, 'Language', size=5, readonly=True),
-        'reference_extra_data': fields.char('Extra data', widget='json', size=256)
+        'reference_extra_data': fields.text('Extra data', widget='json')
     }
 
     _defaults = {
