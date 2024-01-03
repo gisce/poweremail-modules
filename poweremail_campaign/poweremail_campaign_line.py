@@ -3,6 +3,8 @@
 from osv import osv, fields
 from osv.osv import TransactionExecute
 from base.res.partner.partner import _lang_get
+import json
+from ast import literal_eval
 
 
 class PoweremailCampaignLine(osv.osv):
@@ -86,7 +88,7 @@ class PoweremailCampaignLine(osv.osv):
             context['src_rec_id'] = line_id
             context['src_model'] = self._name
             if line_v.get('reference_extra_data'):
-                context['reference_extra_data'] = line_v['reference_extra_data']
+                context['reference_extra_data'] = literal_eval(json.loads(line_v['reference_extra_data']))
             self_obj.write(line_id, {'state': 'sending'})
             pm_template_obj.generate_mail(template, id_aux, context=context)
         except Exception as e:
@@ -123,7 +125,7 @@ class PoweremailCampaignLine(osv.osv):
         'state': fields.selection(STATE_SELECTION, 'State'),
         'log': fields.text('Line Log'),
         'lang': fields.selection(_lang_get, 'Language', size=5, readonly=True),
-        'reference_extra_data': fields.text('Extra data', widget='json')
+        'reference_extra_data': fields.char('Extra data', widget='json', size=256)
     }
 
     _defaults = {
