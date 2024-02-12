@@ -124,9 +124,14 @@ class PoweremailCampaign(osv.osv):
                 context=context
             )
             dmn = [
-                ('campaign_id', '=', camp_id),
-                ('state', 'in', ('to_send', 'sending_error'))
+                ('campaign_id', '=', camp_id)
             ]
+
+            if context.get('resend', False):
+                dmn.append('state', '=', 'sent')
+            else:
+                dmn.append('state', 'in', ('to_send', 'sending_error'))
+
             line_ids = pm_camp_line_obj.search(
                 cursor, uid, dmn, limit=campaign_v['batch'] or None,
                 context=context
@@ -136,6 +141,17 @@ class PoweremailCampaign(osv.osv):
                     cursor, uid, line_id, campaign_v['template_id'][0],
                     context=context
                 )
+
+    def resend_mails(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
+        if not isinstance(ids, list):
+            ids = [ids]
+
+        ctx = context.copy()
+        ctx['resend'] = True
+
+        self.send_emails(cursor, uid, ids, context=ctx)
 
     _columns = {
         'template_id': fields.many2one('poweremail.templates', 'Template E-mail', required=True),
