@@ -1,1 +1,2 @@
 import wizard_poweremail_campaign
+import wizard_resend_mails
