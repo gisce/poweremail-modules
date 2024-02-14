@@ -36,9 +36,9 @@ def up(cursor, installed_version):
 
     load_access_rules_from_model_name(
         cursor, 'poweremail_campaign', [
-            'access_wizard_resend_mails_r',
-            'access_wizard_resend_mails_w',
-            'access_wizard_resend_mails_u'
+            'model_wizard_resend_mails_r',
+            'model_wizard_resend_mails_w',
+            'model_wizard_resend_mails_u'
         ], mode='init'
     )
 
