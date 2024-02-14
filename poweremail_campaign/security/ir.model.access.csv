@@ -8,3 +8,6 @@
 "access_wizard_poweremail_campaign_r","wizard.poweremail.campaign","model_wizard_poweremail_campaign","poweremail.res_groups_peuserse",1,0,0,0
 "access_wizard_poweremail_campaign_w","wizard.poweremail.campaign","model_wizard_poweremail_campaign","poweremail.res_groups_peusersi",1,1,1,0
 "access_wizard_poweremail_campaign_u","wizard.poweremail.campaign","model_wizard_poweremail_campaign","poweremail.res_groups_pemanager",1,1,1,1
+"access_wizard_resend_mails_r","wizard.resend.mails","model_wizard_resend_mails","poweremail.res_groups_peuserse",1,0,0,0
+"access_wizard_resend_mails_w","wizard.resend.mails","model_wizard_resend_mails","poweremail.res_groups_peusersi",1,1,1,0
+"access_wizard_resend_mails_u","wizard.resend.mails","model_wizard_resend_mails","poweremail.res_groups_pemanager",1,1,1,1
