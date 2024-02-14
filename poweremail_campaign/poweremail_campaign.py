@@ -127,7 +127,6 @@ class PoweremailCampaign(osv.osv):
                 ('campaign_id', '=', camp_id),
                 ('state', 'in', ('to_send', 'sending_error'))
             ]
-
             line_ids = pm_camp_line_obj.search(
                 cursor, uid, dmn, limit=campaign_v['batch'] or None,
                 context=context
