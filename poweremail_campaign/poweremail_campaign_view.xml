@@ -14,36 +14,36 @@
                         <field name="template_id" colspan="2"/>
                         <field name="template_obj" colspan="2"/>
                     </group>
-                    <group colspan="20" col="20">
-                        <group colspan="20" string="Filter Objects" col="1">
-                            <field name="domain" colspan="19" nolabel="1"/>
-                        </group>
-                        <group colspan="20" string="Help" col="1" expand="1">
-                            <label align="0.0" string="The domain has to be a list of tuples"/>
-                            <label align="0.0" string="with conditions, refeering the atributtes."/>
-                            <label align="0.0" string="For example, if we want to search a"/>
-                            <label align="0.0" string="company named 'Adrià' created after '01-01-2020': "/>
-                            <label align="0.0" string="  "/>
-                            <label align="0.3" string="[('name', '=', 'Adrià'), ('create_date', '>', '2020-01-01')] "/>
-                            <label align="0.0" string="  "/>
-                            <label align="0.0" string="[Empty list '[]' indicates no filters are used]"/>
-                        </group>
-                    </group>
-                    <group colspan="8" col="8">
-                        <field name="progress_created" colspan="2" widget="progressbar"/>
-                    </group>
-                    <group colspan="8" col="8">
-                        <field name="progress_sent" colspan="2" widget="progressbar"/>
-                    </group>
-                    <group colspan="8" col="8">
-                        <button icon="gtk-open" name="%(poweremail_campaign.action_poweremail_campaign_list_lines)d" string="List Related Objects" type="action"/>
-                        <button icon="gtk-execute" name="update_linies_campanya" string="Update Lines" type="object" confirm="Are you sure? The current existent lines will be erased and new ones will be created."/>
-                        <button icon="gtk-execute" name="send_emails" string="Send Emails" type="object" confirm="Do you really want to send the emails?"/>
-                    </group>
-                    <group colspan="8" col="8">
-                        <field name="batch"/>
-                        <field name="distinct_mails"/>
-                    </group>
+                    <notebook colspan="4">
+						<page string="General">
+                            <group colspan="20" col="20" string="">
+                                <group colspan="20" string="Filter Objects" col="1">
+                                    <field name="domain" colspan="19" nolabel="1" widget="codeeditor"/>
+                                </group>
+                                <group colspan="8" col="8">
+                                    <label align="0.0" string="Readme: https://rfc.gisce.net/t/creacio-duna-nova-campanya-de-power-email/1864"/>
+                                </group>
+                            </group>
+                            <group colspan="8" col="8">
+                                <field name="progress_created" colspan="2" widget="progressbar"/>
+                            </group>
+                            <group colspan="8" col="8">
+                                <field name="progress_sent" colspan="2" widget="progressbar"/>
+                            </group>
+                            <group colspan="8" col="8">
+                                <button icon="reload" name="update_linies_campanya" string="Create Lines" type="object" confirm="Are you sure? The current existent lines will be erased and new ones will be created."/>
+                                <button icon="folder-open" name="%(poweremail_campaign.action_poweremail_campaign_list_lines)d" string="List Related Objects" type="action"/>
+                                <button icon="send" name="send_emails" string="Send Emails" type="object" confirm="Do you really want to send the emails?" primary="1"/>
+                            </group>
+						</page>
+						<page string="Advanced configuration">
+                            <group colspan="8" col="8">
+                                <field name="batch"/>
+                                <newline />
+                                <field name="distinct_mails"/>
+                            </group>
+						</page>
+                    </notebook>
                 </form>
             </field>
         </record>
