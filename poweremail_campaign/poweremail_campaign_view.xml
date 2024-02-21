@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
     <data>
-        <menuitem name="Power Email Campaigns" id="menu_poweremail_campaign" parent="poweremail.menu_poweremail_administration_server" sequence="1"/>
+        <menuitem name="Power Email Campaigns" id="menu_poweremail_campaign"
+                  parent="poweremail.menu_poweremail_administration_server" sequence="1"/>
 
         <record model="ir.ui.view" id="poweremail_campaign_form">
             <field name="name">poweremail.campaign.form</field>
@@ -15,34 +16,40 @@
                         <field name="template_obj" colspan="2"/>
                     </group>
                     <notebook colspan="4">
-						<page string="General">
+                        <page string="General">
                             <group colspan="20" col="20" string="">
                                 <group colspan="20" string="Filter Objects" col="1">
-                                    <field name="domain" colspan="19" nolabel="1" widget="codeeditor" widget_props="{'lang': 'python'}"/>
+                                    <field name="domain" colspan="19" nolabel="1" widget="codeeditor"
+                                           widget_props="{'lang': 'python'}"/>
                                 </group>
                                 <group colspan="8" col="8">
-                                    <label align="0.0" string="Readme: https://rfc.gisce.net/t/creacio-duna-nova-campanya-de-power-email/1864"/>
+                                    <label align="0.0"
+                                           string="Readme: https://rfc.gisce.net/t/creacio-duna-nova-campanya-de-power-email/1864"/>
                                 </group>
                             </group>
                             <group colspan="8" col="8">
-                                <field name="progress_created" colspan="2" widget="progressbar"/>
+                                 <field name="progress_created" colspan="2" widget="progressbar"/>
                             </group>
                             <group colspan="8" col="8">
                                 <field name="progress_sent" colspan="2" widget="progressbar"/>
                             </group>
                             <group colspan="8" col="8">
-                                <button icon="reload" name="update_linies_campanya" string="Create Lines" type="object" confirm="Are you sure? The current existent lines will be erased and new ones will be created."/>
-                                <button icon="folder-open" name="%(poweremail_campaign.action_poweremail_campaign_list_lines)d" string="List Related Objects" type="action"/>
-                                <button icon="send" name="send_emails" string="Send Emails" type="object" confirm="Do you really want to send the emails?" primary="1"/>
+                                <button icon="reload" name="update_linies_campanya" string="Create Lines" type="object"
+                                        confirm="Are you sure? The current existent lines will be erased and new ones will be created."/>
+                                <button icon="folder-open"
+                                        name="%(poweremail_campaign.action_poweremail_campaign_list_lines)d"
+                                        string="List Related Objects" type="action"/>
+                                <button icon="send" name="send_emails" string="Send Emails" type="object"
+                                        confirm="Do you really want to send the emails?" primary="1"/>
                             </group>
-						</page>
-						<page string="Advanced configuration">
+                        </page>
+                        <page string="Advanced configuration">
                             <group colspan="8" col="8">
                                 <field name="batch"/>
-                                <newline />
+                                <newline/>
                                 <field name="distinct_mails"/>
                             </group>
-						</page>
+                        </page>
                     </notebook>
                 </form>
             </field>
