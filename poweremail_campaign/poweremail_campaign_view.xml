@@ -18,7 +18,7 @@
 						<page string="General">
                             <group colspan="20" col="20" string="">
                                 <group colspan="20" string="Filter Objects" col="1">
-                                    <field name="domain" colspan="19" nolabel="1" widget="codeeditor"/>
+                                    <field name="domain" colspan="19" nolabel="1" widget="codeeditor" widget_props="{'lang': 'python'}"/>
                                 </group>
                                 <group colspan="8" col="8">
                                     <label align="0.0" string="Readme: https://rfc.gisce.net/t/creacio-duna-nova-campanya-de-power-email/1864"/>
