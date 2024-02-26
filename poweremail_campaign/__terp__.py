@@ -15,6 +15,7 @@
   ],
   "update_xml": [
       "wizard/wizard_poweremail_campaign.xml",
+      "wizard/wizard_resend_mails_view.xml",
       "poweremail_campaign_view.xml",
       "poweremail_campaign_line_view.xml",
       "security/ir.model.access.csv",
