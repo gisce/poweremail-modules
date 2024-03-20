@@ -9,12 +9,69 @@ from osv import osv, fields
 from tools.translate import _
 from datetime import datetime
 
+from signaturit_sdk.signaturit_client import SignaturitClient
 from poweremail_signaturit.poweremail_core import get_signaturit_client
+from tools import config
 
 
 class PoweremailMailbox(osv.osv):
 
     _inherit = 'poweremail.mailbox'
+
+    def get_company_signaturit_id(self, cursor, uid, poweremail_id, context=None):
+        """
+        S'intenta calcular el company_id de un email a partir de la referencia vinculada al emailñ.
+        Si no hi ha referencia, s'agafa del context (si n'hi ha)
+        """
+        if isinstance(poweremail_id, list):
+            poweremail_id = poweremail_id[0]
+        if context is None:
+            context = {}
+        company_o = self.pool.get("res.company")
+
+        # Si no tenim el modul signaturit_multicompany instalat no fem res
+        if "signaturit_id" not in company_o._columns:
+            return False
+
+        # Si no tenim registre vinculat desde el que calcular la company ni tenim context, no fem res
+        reference = self.read(cursor, uid, poweremail_id, ['reference'])['reference']
+        if not reference:
+            if context.get("company_id"):
+                signaturit_id = company_o.read(cursor, uid, context.get("company_id"), ['signaturit_id'])['signaturit_id']
+                return signaturit_id
+            return False
+
+        # Si el registre que tenim vinculat no existeix i no tenim context, no fem res
+        ref_o_str, ref_id = reference.split(",")
+        ref_o = self.pool.get(ref_o_str)
+        ref_id = int(ref_id)
+        if not ref_id:
+            if context.get("company_id"):
+                signaturit_id = company_o.read(cursor, uid, context.get("company_id"), ['signaturit_id'])['signaturit_id']
+                return signaturit_id
+            return False
+
+        # Finalment, si el registre vinculat te el camp "company_id" el fem servir. Sino l'agafem del context
+        company_id = False
+        if "company_id" in ref_o:
+            company_id = ref_o.read(cursor, uid, ref_id, ['company_id'])
+            if company_id['company_id']:
+                company_id = company_id['company_id'][0]
+        if not company_id and context.get("company_id"):
+            company_id = context.get("company_id")
+        else:
+            return False
+        signaturit_id = company_o.read(cursor, uid, company_id, ['signaturit_id'])['signaturit_id']
+        return signaturit_id
+
+    def get_signaturit_client(self, cursor, uid, poweremail_id, context=None):
+        client = get_signaturit_client()
+        if not poweremail_id:
+            return client
+        token = self.get_company_signaturit_id(cursor, uid, poweremail_id, context=context)
+        if token:
+            client = SignaturitClient(token, config.get('signaturit_production', False))
+        return client
 
     def update_poweremail_certificate(
             self, cursor, uid, pe_id, final_certificat_state,  context=None):
@@ -29,7 +86,7 @@ class PoweremailMailbox(osv.osv):
             poweremail_info = cursor.dictfetchone()
         except LockNotAvailable:
             return False
-        client = get_signaturit_client()
+        client = self.pool.get("poweremail.mailbox").get_signaturit_client(cursor, uid, context.get("poweremail_id"), context=context)
         res = client.get_email(poweremail_info['certificat_signature_id'])
         if "id" not in res:
             return False
