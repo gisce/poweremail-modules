@@ -32,7 +32,7 @@ class WizardResendMails(osv.osv_memory):
         pw_camp_ids = context.get('active_ids', [])
         pw_line_ids = pw_line_obj.search(cursor, uid, [
             ('campaign_id', 'in', pw_camp_ids),
-            ('state', '=', 'sent')
+            ('state', 'in', ['sending', 'sending_error', 'sent'])
         ])
 
         res['domain'].update(
