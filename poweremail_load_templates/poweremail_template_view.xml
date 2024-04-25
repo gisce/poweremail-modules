@@ -9,7 +9,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//page[@string='Advanced']" position="after">
                     <page string="Source">
-                         <field name="source_ids" colspan="2"/>
+                         <field name="source_ids" colspan="2" context="{'default_template_id': active_id}"/>
                     </page>
                 </xpath>
             </field>
