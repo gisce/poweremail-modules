@@ -1,3 +1,4 @@
+
 from osv import osv
 from tools import config
 from oorq.decorators import job
