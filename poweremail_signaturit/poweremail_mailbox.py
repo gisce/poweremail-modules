@@ -11,6 +11,29 @@ from datetime import datetime
 
 from poweremail_signaturit.poweremail_core import get_signaturit_client
 
+SIGNATURIT_STATES_ORDER = {
+    'email_processed': 10,
+    'email_delivered': 20,
+    'email_bounced': 30,
+    'email_deferred': 40,
+    'reminder_email_processed': 50,
+    'reminder_email_delivered': 60,
+    'sms_processed': 70,
+    'sms_delivered': 80,
+    'password_sms_processed': 90,
+    'password_sms_delivered': 100,
+    'document_opened': 110,
+    'document_signed': 120,
+    'document_completed': 130,
+    'audit_trail_completed': 140,
+    'document_declined': 150,
+    'document_expired': 160,
+    'document_canceled': 170,
+    'photo_added': 180,
+    'voice_added': 190,
+    'file_added': 200,
+    'photo_id_added': 210,
+}
 
 class PoweremailMailbox(osv.osv):
 
@@ -42,9 +65,9 @@ class PoweremailMailbox(osv.osv):
             certificat_state_to_write = final_certificat_state
         # Si no tenim lestat final, l'estat mes recent
         else:
-            certificat_state_to_write = max(email_events, key=lambda x: x[0])[1]
+            certificat_state_to_write = max(email_events, key=lambda x: (x[0], SIGNATURIT_STATES_ORDER.get(x[1], -1)))[1]
         self.write(cursor, uid, poweremail_info['id'],
-                   {'certificat_state': certificat_state_to_write})
+                   {'certificat_state': certificat_state_to_write}, context=context)
 
     def update_poweremail_certificat_state(self, cursor, uid, ids, context=None):
         res = super(PoweremailMailbox, self).update_poweremail_certificat_state(cursor, uid, ids, context=context)
@@ -65,6 +88,7 @@ class PoweremailMailbox(osv.osv):
             )
             all_data = tmp_cursor.fetchall()
             pwids = [x[0] for x in all_data]
+            pwids.sort(reverse=True)
             self.write(tmp_cursor, uid, pwids, {'certificat_update_datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
         except LockNotAvailable:
             return False
@@ -73,10 +97,14 @@ class PoweremailMailbox(osv.osv):
         pet_obj = osv.TransactionExecute(
             cursor.dbname, uid, 'poweremail.mailbox'
         )
+        ctx = context.copy()
+        ctx.update({
+            'records_checked': [],
+        })
         for poweremail_id in pwids:
             try:
                 pet_obj.update_poweremail_certificate(
-                    [poweremail_id], final_certificat_state, context=context
+                    [poweremail_id], final_certificat_state, context=ctx
                 )
             except Exception as e:
                 sentry = self.pool.get('sentry.setup')
