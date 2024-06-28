@@ -54,7 +54,7 @@ class PoweremailMailbox(osv.osv):
                     # Si la llista de records comprovats es buida, agafem tots els emails de la factura relacionada
                     # per poder tenir una visió global, ja que si es crida el mètode amb un sol email, pot ser que tingui
                     # mes emails posteriors i que no s'hagi de cridar el callback
-                    if not records_checked:
+                    if not context.has_key('records_checked'):
                         certificate_email_ids = self.get_certificate_email_ids_with_same_ref(cursor, uid, data['reference'], context=context)
                         # Si l'id de l'email que estem processant es més petit que el major referent al mateix objecte
                         # Vol dir que hi ha un email posterior, per tant no cridem el callback per un email anterior.
