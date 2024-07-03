@@ -46,7 +46,7 @@ class PoweremailMailbox(osv.osv):
         self_q = self.q(cursor, uid)
         try:
             q_sql = self_q.select(
-                ['id', 'certificat_signature_id'], for_=For('UPDATE', nowait=True)
+                ['id', 'certificat_signature_id', 'certificat_state'], for_=For('UPDATE', nowait=True)
             ).where([('id', '=', pe_id)])
             cursor.execute(*q_sql)
             poweremail_info = cursor.dictfetchone()
@@ -66,8 +66,9 @@ class PoweremailMailbox(osv.osv):
         # Si no tenim lestat final, l'estat mes recent
         else:
             certificat_state_to_write = max(email_events, key=lambda x: (x[0], SIGNATURIT_STATES_ORDER.get(x[1], -1)))[1]
-        self.write(cursor, uid, poweremail_info['id'],
-                   {'certificat_state': certificat_state_to_write}, context=context)
+        if poweremail_info['certificat_state'] != certificat_state_to_write:
+            self.write(cursor, uid, poweremail_info['id'],
+                       {'certificat_state': certificat_state_to_write}, context=context)
 
     def update_poweremail_certificat_state(self, cursor, uid, ids, context=None):
         res = super(PoweremailMailbox, self).update_poweremail_certificat_state(cursor, uid, ids, context=context)
@@ -99,7 +100,7 @@ class PoweremailMailbox(osv.osv):
         )
         ctx = context.copy()
         ctx.update({
-            'records_checked': [],
+            'records_checked': {},
         })
         for poweremail_id in pwids:
             try:

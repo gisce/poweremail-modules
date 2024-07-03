@@ -25,7 +25,7 @@ class PoweremailMailbox(osv.osv):
         ctx = context.copy()
         ctx['pe_callback_origin_ids'] = {}
         ctx['meta'] = {}
-        records_checked = context.get('records_checked', [])
+        records_checked = context.get('records_checked', {})
         if vals:
             init_meta = vals.get('meta', {}) or {}
             if isinstance(init_meta, basestring):
@@ -43,32 +43,22 @@ class PoweremailMailbox(osv.osv):
                 meta = {}
 
             ref = i['reference'].split(',')
-            ids_cbk[ref[0]] = ids_cbk.get(ref[0], []) + [int(ref[1])]
+            if not records_checked.get(ref[0], []) or (records_checked.get(ref[0], []) and int(ref[1]) not in records_checked[ref[0]]) or func != 'write':
+                ids_cbk[ref[0]] = ids_cbk.get(ref[0], []) + [int(ref[1])]
+                records_checked[ref[0]] = records_checked.get(ref[0], []) + [int(ref[1])]
+
             ctx['pe_callback_origin_ids'][int(ref[1])] = i['id']
             ctx['meta'][int(ref[1])] = meta
-        use_callback = True
+            context.update({
+                'records_checked': records_checked
+            })
         for model in ids_cbk:
             src = self.pool.get(model)
             try:
-                if not records_checked or (records_checked and ids_cbk not in records_checked):
-                    # Si la llista de records comprovats es buida, agafem tots els emails de la factura relacionada
-                    # per poder tenir una visió global, ja que si es crida el mètode amb un sol email, pot ser que tingui
-                    # mes emails posteriors i que no s'hagi de cridar el callback
-                    if not context.has_key('records_checked'):
-                        certificate_email_ids = self.get_certificate_email_ids_with_same_ref(cursor, uid, data['reference'], context=context)
-                        # Si l'id de l'email que estem processant es més petit que el major referent al mateix objecte
-                        # Vol dir que hi ha un email posterior, per tant no cridem el callback per un email anterior.
-                        if ids[0] < certificate_email_ids[0]:
-                            use_callback = False
-                    if use_callback:
-                        if vals:
-                            getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], vals, ctx)
-                        else:
-                            getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], ctx)
-                        records_checked.append(ids_cbk)
-                        context.update({
-                            'records_checked': records_checked,
-                        })
+                if vals:
+                    getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], vals, ctx)
+                else:
+                    getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], ctx)
             except AttributeError:
                 pass
 
