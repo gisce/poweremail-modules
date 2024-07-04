@@ -51,8 +51,8 @@ class PoweremailMailbox(osv.osv):
                 context.update({
                     'records_checked': records_checked
                 })
-            ctx['pe_callback_origin_ids'][int(ref[1])] = i['id']
-            ctx['meta'][int(ref[1])] = meta
+            ctx['pe_callback_origin_ids'][int(record_id)] = i['id']
+            ctx['meta'][int(record_id)] = meta
         for model in ids_cbk:
             src = self.pool.get(model)
             try:
