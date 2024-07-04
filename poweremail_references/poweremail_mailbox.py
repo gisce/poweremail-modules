@@ -43,15 +43,16 @@ class PoweremailMailbox(osv.osv):
                 meta = {}
 
             ref = i['reference'].split(',')
-            if not records_checked.get(ref[0], []) or (records_checked.get(ref[0], []) and int(ref[1]) not in records_checked[ref[0]]) or func != 'write':
-                ids_cbk[ref[0]] = ids_cbk.get(ref[0], []) + [int(ref[1])]
-                records_checked[ref[0]] = records_checked.get(ref[0], []) + [int(ref[1])]
-
+            model_type = ref[0]
+            record_id = ref[1]
+            if not self.restrict_callbacks_from_previous_emails(cursor, uid, ref, func, vals, context=ctx):
+                ids_cbk[model_type] = ids_cbk.get(model_type, []) + [int(record_id)]
+                records_checked[model_type] = records_checked.get(model_type, []) + [int(record_id)]
+                context.update({
+                    'records_checked': records_checked
+                })
             ctx['pe_callback_origin_ids'][int(ref[1])] = i['id']
             ctx['meta'][int(ref[1])] = meta
-            context.update({
-                'records_checked': records_checked
-            })
         for model in ids_cbk:
             src = self.pool.get(model)
             try:
@@ -61,6 +62,19 @@ class PoweremailMailbox(osv.osv):
                     getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], ctx)
             except AttributeError:
                 pass
+
+    def restrict_write_callback_from_previous_emails(self, cursor, uid, ref, func, vals={}, context=None):
+        if context is None:
+            context = {}
+        records_checked = context.get('records_checked', {})
+        restrict = True
+        model_type = ref[0]
+        record_id = ref[1]
+        if (not records_checked.get(model_type, [])
+                or (records_checked.get(model_type, []) and int(record_id) not in records_checked[model_type])
+                or func != 'write') or 'certificat_state' not in vals.keys():
+            restrict = False
+        return restrict
 
     def get_certificate_email_ids_with_same_ref(self, cursor, uid, ref, context=None):
         if context is None:
