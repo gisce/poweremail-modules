@@ -45,7 +45,7 @@ class PoweremailMailbox(osv.osv):
             ref = i['reference'].split(',')
             model_type = ref[0]
             record_id = ref[1]
-            if not self.restrict_callbacks_from_previous_emails(cursor, uid, ref, func, vals, context=ctx):
+            if not self.restrict_write_callback_from_previous_emails(cursor, uid, ref, func, vals, context=ctx):
                 ids_cbk[model_type] = ids_cbk.get(model_type, []) + [int(record_id)]
                 records_checked[model_type] = records_checked.get(model_type, []) + [int(record_id)]
                 context.update({
