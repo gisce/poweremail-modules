@@ -75,6 +75,8 @@ class PoweremailMailbox(osv.osv):
         # Actualitzarem l'estat de tots els mails que el seu certificat_state no sigui l'estat "get_email_opened_state"
         # ni que siguin erronis (estat "email_bounced"). Si l'email ja l'ha obert el client la resta de la info no ens
         # interessa i si el email esta en error tampoc ens interesa perque no es moura d'alla
+        if context is None:
+            context = {}
         final_certificat_state = self.get_email_opened_state(cursor, uid)
         db = pooler.get_db(cursor.dbname)
         tmp_cursor = db.cursor()
