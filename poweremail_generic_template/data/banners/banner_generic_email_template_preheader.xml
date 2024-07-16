@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="report.banner" id="banner_generic_email_template_preheader">
+            <field name="name">Email genérico (TEMPLATE): preheader</field>
+            <field name="code">generic_email_template_preheader</field>
+            <field name="start_date">2000-01-01</field>
+            <field name="end_date">2000-01-01</field>
+            <field name="sequence">0</field>
+            <field name="res_model">no.required</field>
+            <field name="description">Componente que constituye el preheader en el email genérico.
+Se debe utilizar como referencia de cómo configurar el preheader para un correo en concreto.</field>
+            <field name="html[en_US]" file="emails/generic/components/preheader/en.mako"/>
+            <field name="html[ca_ES]" file="emails/generic/components/preheader/ca.mako"/>
+            <field name="html[es_ES]" file="emails/generic/components/preheader/es.mako"/>
+        </record>
+    </data>
+</openerp>
