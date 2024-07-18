@@ -43,12 +43,6 @@ footer_html = get_value(cursor, uid, object.id, message=banners['generic_email_t
               <tr>
                 <td class="wrapper">
                   ${body_html}
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td>
-                      </td>
-                    </tr>
-                  </table>
                 </td>
               </tr>
             <!-- END MAIN CONTENT AREA -->
