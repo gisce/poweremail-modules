@@ -3,9 +3,6 @@
 from datetime import datetime
 from poweremail.poweremail_template import get_value
 
-pool = object.pool
-cursor = object._cr
-uid = object._uid
 today = datetime.today().date().strftime('%Y-%m-%d')
 
 banner_o = pool.get('report.banner')
@@ -15,8 +12,17 @@ banners = banner_o.get_report_banners(
   today, object.id, context={'lang': lang}
 )
 
-body_html = get_value(cursor, uid, object.id, message=banners['generic_email_template_body'], template=template, context={'lang': lang})
-footer_html = get_value(cursor, uid, object.id, message=banners['generic_email_template_footer'], template=template, context={'lang': lang})
+company = eval(banners['generic_email_template_company'])
+
+env['company'] = company
+ctx = {
+    'lang': lang,
+    'raise_exception': True,
+}
+ctx.update(env)
+
+body_html = get_value(cursor, uid, object.id, message=banners['generic_email_template_body'], template=template, context=ctx)
+footer_html = get_value(cursor, uid, object.id, message=banners['generic_email_template_footer'], template=template, context=ctx)
 %>
 <html>
   <head>
