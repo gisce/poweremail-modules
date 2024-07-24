@@ -9,8 +9,8 @@
             <field name="res_model">no.required</field>
             <field name="description">La compañia a la que hace referencia la plantilla</field>
             <field name="html[en_US]" file="emails/generic/components/company/en.mako"/>
-            <field name="html[ca_ES]" file="emails/generic/components/company/ca.mako"/>
-            <field name="html[es_ES]" file="emails/generic/components/company/es.mako"/>
+            <field name="html[ca_ES]" file="emails/generic/components/company/en.mako"/>
+            <field name="html[es_ES]" file="emails/generic/components/company/en.mako"/>
         </record>
     </data>
 </openerp>
