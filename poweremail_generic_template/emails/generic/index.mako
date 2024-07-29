@@ -12,7 +12,13 @@ banners = banner_o.get_report_banners(
   today, object.id, context={'lang': lang}
 )
 
-company = eval(banners['generic_email_template_company'])
+try:
+  company = eval(banners['generic_email_template_company'])
+except:
+  company = False
+
+if not company:
+  company = pool.get('res.company').browse(cursor, uid, 1, context={})
 
 env['company'] = company
 ctx = {
