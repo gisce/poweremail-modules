@@ -66,6 +66,7 @@ class PoweremailMailbox(osv.osv):
             all_data = tmp_cursor.fetchall()
             pwids = [x[0] for x in all_data]
             self.write(tmp_cursor, uid, pwids, {'certificat_update_datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+            tmp_cursor.commit()
         except LockNotAvailable:
             return False
         finally:
