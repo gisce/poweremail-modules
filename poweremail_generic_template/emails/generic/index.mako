@@ -24,6 +24,7 @@ env['company'] = company
 ctx = {
     'lang': lang,
     'raise_exception': True,
+    'banners': banners,
 }
 ctx.update(env)
 
