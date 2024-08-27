@@ -37,6 +37,8 @@ class PoweremailMailbox(osv.osv):
         for certificate in res.get("certificates", []):  # Hauria de ser nomes 1 pero bueno
             for event in certificate.get("events", []):  # Ens guardem tots els events que ha tingut el email
                 email_events.append((event['created_at'], event["type"]))
+        if not email_events:
+            return False
         # Si un dels events es que s'ha arrivat al estat get_email_opened_state, ja en tenim prou amb aixo
         if final_certificat_state in [x[1] for x in email_events]:
             certificat_state_to_write = final_certificat_state
