@@ -3,6 +3,8 @@
 from osv import osv, fields
 from poweremail.poweremail_template import get_value
 from tools import config
+from oorq.decorators import job
+from tqdm import tqdm
 
 
 class PoweremailCampaign(osv.osv):
@@ -65,7 +67,6 @@ class PoweremailCampaign(osv.osv):
         pm_camp_q = pm_camp_obj.q(cursor, uid)
         pm_camp_line_obj = self.pool.get('poweremail.campaign.line')
         pm_camp_line_q = pm_camp_line_obj.q(cursor, uid)
-        mails_unics = set()
         for camp_id in ids:
             pm_camp_vs = pm_camp_q.read(['domain', 'template_id', 'distinct_mails']).where([('id', '=', camp_id)])[0]
             line_vs = pm_camp_line_q.read(['id']).where([('campaign_id', '=', camp_id)])
@@ -81,34 +82,50 @@ class PoweremailCampaign(osv.osv):
             if template.model_int_name:
                 model = str(template.model_int_name)
                 model_obj = self.pool.get(model)
-                res_ids = model_obj.search(cursor, uid, domain, context=context)
-
+                lines_ids = model_obj.search(cursor, uid, domain, context=context)
+                ctx = context.copy()
                 # Crear campaign line per cada registre trobat
-                from tqdm import tqdm
-                for record_id in tqdm(res_ids):
-                    ref = '{},{}'.format(model, record_id)
-                    lang = get_value(
-                        cursor, uid, record_id, template.lang, template,
-                        context=context
-                    )
-                    state = 'to_send'
+                for line_id in tqdm(lines_ids):
                     if pm_camp_vs['distinct_mails']:
-                        email = get_value(
-                            cursor, uid, record_id, template.def_to, template,
-                            context=context
-                        )
-                        if email in mails_unics:
-                            state = 'avoid_duplicate'
-                        else:
-                            mails_unics.add(email)
+                        self.create_lines_sync(cursor, uid, template_id, model, line_id, context=context)
+                    else:
+                        ctx['async'] = True
+                        self.create_lines_async(cursor, uid, template_id, model, line_id, context=ctx)
 
-                    params = {
-                        'campaign_id': camp_id,
-                        'ref': ref,
-                        'state': state,
-                        'lang': lang != 'False' and lang or config.get('lang', 'en_US')
-                    }
-                    pm_camp_line_obj.create(cursor, uid, params)
+        return True
+
+    @job(queue=config.get('poweremail_sender_queue', 'poweremail'))
+    def create_lines_async(self, cursor, uid, template_id, model, line_id, context=None):
+        self.create_lines_sync(cursor, uid, template_id, model, line_id, context=context)
+        return True
+
+    def create_lines_sync(self, cursor, uid, template_id, model, line_id, context=None):
+        pm_camp_line_obj = self.pool.get('poweremail.campaign.line')
+        template_o = self.pool.get('poweremail.templates')
+        template = template_o.browse(cursor, uid, template_id, context=context)
+        mails_unics = set()
+        ref = '{},{}'.format(model, line_id)
+        lang = get_value(
+            cursor, uid, line_id, template.lang, template,
+            context=context
+        )
+        state = 'to_send'
+        if not (context.get('async', False)):
+            email = get_value(
+                cursor, uid, line_id, template.def_to, template,
+                context=context
+            )
+            if email in mails_unics:
+                state = 'avoid_duplicate'
+            else:
+                mails_unics.add(email)
+        params = {
+            'campaign_id': context['active_id'],
+            'ref': ref,
+            'state': state,
+            'lang': lang != 'False' and lang or config.get('lang', 'en_US')
+        }
+        pm_camp_line_obj.create(cursor, uid, params)
         return True
 
     def send_emails(self, cursor, uid, ids, context=None):
