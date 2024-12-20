@@ -47,7 +47,7 @@ class PoweremailCoreAccounts(osv.osv):
                 auth_str = self.generate_oauth_2_string(core_account.email_id, token, base64_encode=False)
                 self.smtp_authentication(smtp_conn, auth_str)
             else:
-                super(PoweremailCoreAccounts, self).login_imap(cursor, uid, core_account, smtp_conn, context=context)
+                super(PoweremailCoreAccounts, self).login_smtp(cursor, uid, core_account, smtp_conn, context=context)
 
     def smtp_authentication(self, smtp_conn, auth_string):
         if config.get('debug_enabled', False):
