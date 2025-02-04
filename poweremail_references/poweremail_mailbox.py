@@ -76,16 +76,6 @@ class PoweremailMailbox(osv.osv):
             restrict = False
         return restrict
 
-    def get_certificate_email_ids_with_same_ref(self, cursor, uid, ref, context=None):
-        if context is None:
-            context = {}
-        email_ids = self.search(cursor, uid, [
-            ('certificat', '=', True),
-            ('reference', '=', ref)
-        ], context=context)
-        email_ids.sort(reverse=True)
-        return email_ids
-
     def create(self, cursor, uid, vals, context=None):
         if context is None:
             context = {}
