@@ -19,6 +19,7 @@
         "data/banners/banner_generic_email_template_footer.xml",
         "data/banners/banner_generic_email_template_css.xml",
         "data/banners/banner_generic_email_template_company.xml",
+        "data/banners/banner_generic_email_template_button.xml",
     ],
     "active": False,
     "installable": True
