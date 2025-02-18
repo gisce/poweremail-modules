@@ -2,7 +2,7 @@
     "name": "Powerful SMS capabilities for Open ERP",
     "version": "0.1",
     "author": "Som Energia SCCL",
-    "website": "https://github.com/Som-Energia/powersms",
+    "website": "https://github.com/gisce/poweremail-modules",
     "category": "Added functionality",
     "depends": ["base_extended"],
     "description": """Power SMS""",
