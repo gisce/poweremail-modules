@@ -11,6 +11,7 @@
                     <page string="Api token">
                         <field name="smtp_auth_login_id" colspan="4" select="1"/>
                         <field name="imap_auth_login_id" colspan="4" select="1"/>
+                        <field name="microsoft_graph_login_id" colspan="4" select="1"/>
                     </page>
                 </page>
             </field>

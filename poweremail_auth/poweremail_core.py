@@ -47,7 +47,7 @@ class PoweremailCoreAccounts(osv.osv):
                 auth_str = self.generate_oauth_2_string(core_account.email_id, token, base64_encode=False)
                 self.smtp_authentication(smtp_conn, auth_str)
             else:
-                super(PoweremailCoreAccounts, self).login_imap(cursor, uid, core_account, smtp_conn, context=context)
+                super(PoweremailCoreAccounts, self).login_smtp(cursor, uid, core_account, smtp_conn, context=context)
 
     def smtp_authentication(self, smtp_conn, auth_string):
         if config.get('debug_enabled', False):
@@ -61,9 +61,21 @@ class PoweremailCoreAccounts(osv.osv):
             auth_string = base64.b64encode(auth_string)
         return auth_string
 
+    def get_not_debug_sender(self, account):
+        if account.microsoft_graph_login_id:
+            from qreu.sendcontext import MicrosoftGraphSender
+            return MicrosoftGraphSender(
+                client_id=account.microsoft_graph_login_id.auth_api_id.client_id,
+                client_secret=account.microsoft_graph_login_id.auth_api_id.client_secret,
+                tenant_id=account.microsoft_graph_login_id.auth_api_id.acces_token_url.split('/')[-1],
+                email_address=account.email_id
+            )
+        return super(PoweremailCoreAccounts, self).get_not_debug_sender(account)
+
     _columns = {
         'smtp_auth_login_id': fields.many2one('poweremail.auth.login', 'Auth SMTP login ID'),
         'imap_auth_login_id': fields.many2one('poweremail.auth.login', 'Auth IMAP login ID'),
+        'microsoft_graph_login_id': fields.many2one('poweremail.auth.login', 'Auth with graph.microsoft.com')
     }
 
 
