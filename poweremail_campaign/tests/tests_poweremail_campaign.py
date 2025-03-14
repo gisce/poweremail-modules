@@ -314,3 +314,40 @@ class TestPoweremailCampaign(testing.OOTestCase):
             states = camp_line_obj.read(cursor, uid, linies_ids, ['state'])
             for state in states:
                 self.assertEqual(state['state'], 'to_send')
+
+    def test_avoid_send_email(self):
+        with Transaction().start(self.database) as txn:
+            uid = txn.user
+            cursor = txn.cursor
+
+            imd_obj = self.openerp.pool.get('ir.model.data')
+            camp_obj = self.openerp.pool.get('poweremail.campaign')
+            camp_line_obj = self.openerp.pool.get('poweremail.campaign.line')
+            template_obj = self.openerp.pool.get('poweremail.templates')
+
+            template_id = imd_obj.get_object_reference(
+                cursor, uid, 'poweremail_campaign', 'default_template_poweremail')[1]
+
+            # Email
+            template_obj.write(cursor, uid, template_id, {
+                'def_to': 'hola@gmail.com',
+            })
+
+            # Campanya 1 amb 2 línies
+            camp_id_1 = camp_obj.create(cursor, uid, {
+                'template_id': template_id,
+                'name': "Poweremail Campaign Prova 1",
+                'distinct_mails': True,
+            })
+            camp_line_obj.create(cursor, uid, {'campaign_id': camp_id_1, 'lang': 'en_US','ref': str('res.partner,1')})
+            camp_line_obj.create(cursor, uid, {'campaign_id': camp_id_1, 'lang': 'en_US','ref': str('res.partner,1')})
+
+            camp_obj.update_linies_campanya(cursor, uid, [camp_id_1], context={'active_id': camp_id_1})
+
+            # Lines actualitzades, una d'elles ha de tenir l'state a 'avoid_duplicate'
+            estats = []
+            line_ids = camp_line_obj.search(cursor, uid, [('campaign_id', '=', camp_id_1)])
+            for linia in line_ids:
+                state = camp_line_obj.read(cursor, uid, linia, ['state'])['state']
+                estats.append(state)
+            self.assertEqual(estats, ['to_send', 'avoid_duplicate'])
