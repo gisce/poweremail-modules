@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import logging
 
 import pooler
 from psycopg2.errors import LockNotAvailable
@@ -8,9 +7,8 @@ from sql import For
 from osv import osv, fields
 from tools.translate import _
 from datetime import datetime
-
 from poweremail_signaturit.poweremail_core import get_signaturit_client
-
+from base64 import b64encode
 
 class PoweremailMailbox(osv.osv):
 
@@ -93,6 +91,40 @@ class PoweremailMailbox(osv.osv):
     def get_email_opened_state(self, cursor, uid, context=None):
         return self.pool.get("res.config").get(cursor, uid, "signaturit_email_opened_state", "document_opened")
 
+    def download_signaturit_document(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
+        if isinstance(ids, (tuple, list)):
+            ids = ids[0]
+        pem_core_obj = self.pool.get('poweremail.core_accounts')
+
+        signature_id = self.read(cursor, uid, ids, ['certificat_signature_id'], context=context)['certificat_signature_id']
+        if not signature_id:
+            raise osv.except_osv(_(u"Error"), _(u"No hi ha el Signatureit ID"))
+
+        mail_json = pem_core_obj.get_signaturit_email(cursor, uid, ids, signature_id, context=context)
+        certificates = []
+        if mail_json:
+            certificates = mail_json.get('certificates', [])
+        if not certificates:
+            raise osv.except_osv(_("Error"), _("No hi ha certificats"))
+
+        for certificat in certificates:  # només n'hi hauria d'haber 1
+            certificates_id = certificat.get('id', None)
+            pdf = pem_core_obj.get_mail_audit_trail(cursor, uid, ids, signature_id, certificates_id, context=context)
+            if not pdf:
+                raise osv.except_osv(_("Error"), _("No hi ha el pdf"))
+            datas = {
+                'pdf': b64encode(pdf),
+            }
+            return {
+                'type': 'ir.actions.report.xml',
+                'model': 'poweremail.mailbox',
+                'report_name': 'signature.email.download.audit.trail',
+                'datas': datas,
+                'context': context
+            }
+
     def _get_certificat_states(self, cursor, uid, context=None):
         res = super(PoweremailMailbox, self)._get_certificat_states(cursor, uid, context=context)
         res += [
@@ -113,5 +145,6 @@ class PoweremailMailbox(osv.osv):
         'certificat_state': fields.selection(_get_certificat_states, 'Estat del mail certificat', size=50),
         'certificat_signature_id': fields.char("Signatureit ID", size=64)
     }
+
 
 PoweremailMailbox()

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from test_download_audit_trail import *
+
 from addons import get_module_resource
 from destral import testing
 from destral.patch import PatchNewCursors

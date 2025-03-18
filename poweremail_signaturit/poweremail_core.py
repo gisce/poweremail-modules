@@ -119,5 +119,20 @@ class PoweremailCore(osv.osv):
             res = response.get('error_message', response['error'])
         return res
 
+    def get_mail_audit_trail(self, cr, uid, ids, signature_id, certificate_id, context=None):
+        if context is None:
+            context = {}
+
+        client = get_signaturit_client()
+        pdf = client.download_email_audit_trail(signature_id, certificate_id)
+        return pdf
+
+    def get_signaturit_email(self, cr, uid, ids, signature_id, context=None):
+        if context is None:
+            context = {}
+        client = get_signaturit_client()
+        json = client.get_email(signature_id)
+        return json
+
 
 PoweremailCore()

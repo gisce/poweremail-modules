@@ -11,6 +11,11 @@
                         <field name="certificat_update_datetime" colspan="2" readonly="1" string="Ultima comprovacio" select="2"/>
                         <field name="certificat_signature_id" colspan="3" readonly="1"  select="2"/>
                 </xpath>
+                <xpath expr="//notebook" position="after">
+                    <group colspan="4"  attrs="{'invisible':[('certificat','=',False)]}">
+                        <button name="download_signaturit_document" string="Descarregar registre d'auditoria" icon="cloud-down" colspan="4" type="object"/>
+                    </group>
+                </xpath>
             </field>
         </record>
     </data>
