@@ -1,17 +1,22 @@
 # -*- coding: utf-8 -*-
-import pooler
-from oopgrade.oopgrade import load_data_records
+import logging
+from tools import config
+from oopgrade.oopgrade import load_data_records, column_exists, add_columns
+
+logger = logging.getLogger('openerp.migration.' + __name__)
 
 
 def up(cursor, installed_version):
-    if not installed_version:
+    if not installed_version or config.updating_all:
         return
 
-    pool = pooler.get_pool(cursor.dbname)
-
-    # Crear les diferents taules
-    pool.get('poweremail.campaign')._auto_init(cursor, context={'module': 'poweremail_campaign'})
-    # Indiquem les vistes que volem carregar
+    # afegim columna nova
+    if column_exists(cursor, 'poweremail_campaign', 'progress_generate_mails'):
+        logger.info('Column progress_generate_mails already exists in poweremail_campaign. Passing...')
+    else:
+        add_columns(cursor, {
+            'poweremail_campaign': [('progress_generate_mails', 'float')]
+        })
 
     # Crear les diferents vistes
     load_data_records(

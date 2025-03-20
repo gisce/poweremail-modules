@@ -330,7 +330,7 @@ class TestPoweremailCampaign(testing.OOTestCase):
 
             # Email
             template_obj.write(cursor, uid, template_id, {
-                'def_to': 'hola@gmail.com',
+                'def_to': 'holaroni@gmail.com',
             })
 
             # Campanya 1 amb 2 línies
@@ -339,8 +339,6 @@ class TestPoweremailCampaign(testing.OOTestCase):
                 'name': "Poweremail Campaign Prova 1",
                 'distinct_mails': True,
             })
-            camp_line_obj.create(cursor, uid, {'campaign_id': camp_id_1, 'lang': 'en_US','ref': str('res.partner,1')})
-            camp_line_obj.create(cursor, uid, {'campaign_id': camp_id_1, 'lang': 'en_US','ref': str('res.partner,1')})
 
             camp_obj.update_linies_campanya(cursor, uid, [camp_id_1], context={'active_id': camp_id_1})
 

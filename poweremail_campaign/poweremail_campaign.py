@@ -64,7 +64,7 @@ class PoweremailCampaign(osv.osv):
                 'progress_created': prog_created,
                 'progress_sent': prog_sent,
                 'template_obj': tempval,
-                'Progress_generate_mails': prog_created_mails
+                'progress_generate_mails': prog_created_mails
             }
         return res
 
@@ -94,23 +94,23 @@ class PoweremailCampaign(osv.osv):
             if template.model_int_name:
                 model = str(template.model_int_name)
                 model_obj = self.pool.get(model)
-                lines_ids = model_obj.search(cursor, uid, domain, context=context)
+                record_ids = model_obj.search(cursor, uid, domain, context=context)
                 ctx = context.copy()
                 # Crear campaign line per cada registre trobat
-                for line_id in tqdm(lines_ids):
+                for record_id in tqdm(record_ids):
                     if pm_camp_vs['distinct_mails']:
                         email = get_value(
-                            cursor, uid, line_id, template.def_to, template,
+                            cursor, uid, record_id, template.def_to, template,
                             context=context
                         )
-                        camp_line_id = self.create_lines_sync(cursor, uid, template_id, model, line_id, context=context)
+                        camp_line_id = self.create_lines_sync(cursor, uid, template_id, model, record_id, context=ctx)
                         if email in mails_unics:
-                            pm_camp_line_obj.write(cursor, uid, camp_line_id, {'state': 'avoid_duplicate'})
+                            pm_camp_line_obj.write(cursor, uid, camp_line_id, {'state': 'avoid_duplicate'}, context=ctx)
                         else:
                             mails_unics.add(email)
                     else:
                         ctx['async'] = True
-                        self.create_lines_async(cursor, uid, template_id, model, line_id, context=ctx)
+                        self.create_lines_async(cursor, uid, template_id, model, record_id, context=ctx)
 
         return True
 
@@ -119,13 +119,13 @@ class PoweremailCampaign(osv.osv):
         self.create_lines_sync(cursor, uid, template_id, model, line_id, context=context)
         return True
 
-    def create_lines_sync(self, cursor, uid, template_id, model, line_id, context=None):
+    def create_lines_sync(self, cursor, uid, template_id, model, record_id, context=None):
         pm_camp_line_obj = self.pool.get('poweremail.campaign.line')
         template_o = self.pool.get('poweremail.templates')
         template = template_o.browse(cursor, uid, template_id, context=context)
-        ref = '{},{}'.format(model, line_id)
+        ref = '{},{}'.format(model, record_id)
         lang = get_value(
-            cursor, uid, line_id, template.lang, template,
+            cursor, uid, record_id, template.lang, template,
             context=context
         )
         state = 'to_send'
@@ -135,7 +135,7 @@ class PoweremailCampaign(osv.osv):
             'state': state,
             'lang': lang != 'False' and lang or config.get('lang', 'en_US')
         }
-        camp_line_id = pm_camp_line_obj.create(cursor, uid, params)
+        camp_line_id = pm_camp_line_obj.create(cursor, uid, params, context=context)
         return camp_line_id
 
     def send_emails(self, cursor, uid, ids, context=None):
@@ -170,7 +170,7 @@ class PoweremailCampaign(osv.osv):
         'domain': fields.text('Filter Objects', size=256, required=True),
         'progress_created': fields.function(_ff_created_sent_object, multi='barra_progres', string='Created mail line', type='float', method=True),
         'progress_sent': fields.function(_ff_created_sent_object, multi='barra_progres', string='Mails sent', type='float', method=True),
-        'Progress_generate_mails': fields.function(_ff_created_sent_object, multi='barra_progres',
+        'progress_generate_mails': fields.function(_ff_created_sent_object, multi='barra_progres',
                                                    string='Mails created', type='float', method=True),
         'create_date': fields.datetime('Create Date', readonly=1),
         'template_obj': fields.function(_ff_created_sent_object, multi='barra_progres', string='Object', type='char', size=64, method=True, readonly=1),

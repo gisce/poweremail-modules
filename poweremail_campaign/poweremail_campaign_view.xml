@@ -31,7 +31,7 @@
                                  <field name="progress_created" colspan="2" widget="progressbar" autorefresh="1"/>
                             </group>
                             <group colspan="8" col="8">
-                                <field name="Progress_generate_mails" colspan="2" widget="progressbar" autorefresh="1"/>
+                                <field name="progress_generate_mails" colspan="2" widget="progressbar" autorefresh="1"/>
                             </group>
                             <group colspan="8" col="8">
                                 <field name="progress_sent" colspan="2" widget="progressbar" autorefresh="1"/>
@@ -67,7 +67,7 @@
                     <field name="template_id" select="1"/>
                     <field name="name" select="1"/>
                     <field name="progress_created" select="1" widget="progressbar"/>
-                    <field name="Progress_generate_mails" select="1" widget="progressbar"/>
+                    <field name="progress_generate_mails" select="1" widget="progressbar"/>
                     <field name="progress_sent" select="1" widget="progressbar"/>
                     <field name="template_obj" select="1"/>
                 </tree>
