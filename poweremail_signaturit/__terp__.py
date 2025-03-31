@@ -15,6 +15,7 @@
     "update_xml": [
         "poweremail_mailbox_view.xml",
         "poweremail_mailbox_data.xml",
+        "report/data.xml",
     ],
     "active": False,
     "installable": True
