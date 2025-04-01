@@ -119,20 +119,19 @@ class PoweremailCore(osv.osv):
             res = response.get('error_message', response['error'])
         return res
 
-    def get_mail_audit_trail(self, cr, uid, ids, signature_id, certificate_id, context=None):
-        if context is None:
-            context = {}
-
-        client = get_signaturit_client()
-        pdf = client.download_email_audit_trail(signature_id, certificate_id)
-        return pdf
-
-    def get_signaturit_email(self, cr, uid, ids, signature_id, context=None):
+    def get_mail_audit_trail(self, cr, uid, ids, signature_id, context=None):
         if context is None:
             context = {}
         client = get_signaturit_client()
-        json = client.get_email(signature_id)
-        return json
+        mail_json = client.get_email(signature_id)
+        certificates = []
+        if mail_json:
+            certificates = mail_json.get('certificates', [])
+        if not certificates:
+            raise osv.except_osv(_("Error"), _("No hi ha certificats"))
+        for certificat in certificates:  # només n'hi hauria d'haber 1
+            certificates_id = certificat.get('id', None)
+            return client.download_email_audit_trail(signature_id, certificates_id)
 
 
 PoweremailCore()

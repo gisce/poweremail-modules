@@ -105,28 +105,18 @@ class PoweremailMailbox(osv.osv):
         if not signature_id:
             raise osv.except_osv(_(u"Error"), _(u"No hi ha el Signatureit ID"))
 
-        mail_json = pem_core_obj.get_signaturit_email(cursor, uid, ids, signature_id, context=context)
-        certificates = []
-        if mail_json:
-            certificates = mail_json.get('certificates', [])
-        if not certificates:
-            raise osv.except_osv(_("Error"), _("No hi ha certificats"))
+        pdf = pem_core_obj.get_mail_audit_trail(cursor, uid, ids, signature_id, context=context)
 
-        for certificat in certificates:  # només n'hi hauria d'haber 1
-            certificates_id = certificat.get('id', None)
-            pdf = pem_core_obj.get_mail_audit_trail(cursor, uid, ids, signature_id, certificates_id, context=context)
-            if not pdf:
-                raise osv.except_osv(_("Error"), _("No hi ha el pdf"))
-            datas = {
-                'pdf': b64encode(pdf),
-            }
-            return {
-                'type': 'ir.actions.report.xml',
-                'model': 'poweremail.mailbox',
-                'report_name': 'signature.email.download.audit.trail',
-                'datas': datas,
-                'context': context
-            }
+        datas = {
+            'pdf': b64encode(pdf),
+        }
+        return {
+            'type': 'ir.actions.report.xml',
+            'model': 'poweremail.mailbox',
+            'report_name': 'signature.email.download.audit.trail',
+            'datas': datas,
+            'context': context
+        }
 
     def _get_certificat_states(self, cursor, uid, context=None):
         res = super(PoweremailMailbox, self)._get_certificat_states(cursor, uid, context=context)
