@@ -43,7 +43,7 @@ class PoweremailTemplateReference(osv.osv):
                 'name': _("%s Mail Access") % tmpl.name,
                 'model': src_model,
                 'key': 'action',
-                'key2': 'client_action_relate',
+                'key2': 'client_action_multi',
                 'value': "ir.actions.act_window,%s" % action_id,
                 'object': True,
             }
