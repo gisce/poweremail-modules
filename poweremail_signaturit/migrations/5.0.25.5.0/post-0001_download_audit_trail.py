@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from oopgrade.oopgrade import load_data_records
 from tools import config
+from tools.translate import trans_load
 
 
 def up(cursor, installed_version):
@@ -23,6 +24,9 @@ def up(cursor, installed_version):
     load_data_records(
         cursor, module, view, record_list, mode='update'
     )
+
+    trans_load(cursor, '{}/{}/i18n/ca_ES.po'.format(config['addons_path'], module), 'ca_ES')
+    trans_load(cursor, '{}/{}/i18n/es_ES.po'.format(config['addons_path'], module), 'es_ES')
 
 
 def down(cursor, installed_version):
