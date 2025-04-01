@@ -25,7 +25,6 @@ def up(cursor, installed_version):
         cursor, module, view, record_list, mode='update'
     )
 
-    trans_load(cursor, '{}/{}/i18n/ca_ES.po'.format(config['addons_path'], module), 'ca_ES')
     trans_load(cursor, '{}/{}/i18n/es_ES.po'.format(config['addons_path'], module), 'es_ES')
 
 
