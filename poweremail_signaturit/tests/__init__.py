@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from test_download_audit_trail import *
+
 from addons import get_module_resource
 from destral import testing
 from destral.patch import PatchNewCursors
@@ -12,7 +14,7 @@ from tools import config
 
 class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
 
-    signaturit_sandbox_token = "JhsVikrzRcskvRRYnKkfaLltWBKHbNbzlGBpmgdQTQjHZQFhbmnjApUGKVVIZYxVBqtktRfeDebMPfLZGEwIYj"
+    signaturit_sandbox_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
     def get_sandbox_client(self):
         client = SignaturitClient(self.signaturit_sandbox_token, False)
@@ -22,7 +24,7 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
         cursor = self.cursor
         uid = self.uid
         pool = self.openerp.pool
-        client = self.get_sandbox_client()
+        #client = self.get_sandbox_client()
 
         # He comentat el test per no fer una crida sempre que es facin els tests, pero ho deixo per veure com es pot cridar la api
 
@@ -105,8 +107,9 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
             poweremail_o.update_poweremail_certificat_state(cursor, uid, [])
             self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "document_opened")
 
+    @mock.patch("signaturit_sdk.signaturit_client.SignaturitClient.create_email")
     @mock.patch("poweremail_signaturit.poweremail_core.get_signaturit_client")
-    def test_send_mail_certificat_fails_and_returns_false(self, mocked_get_signaturit_client):
+    def test_send_mail_certificat_fails_and_returns_false(self, mocked_get_signaturit_client, mock_create_email):
         cursor = self.cursor
         uid = self.uid
         pool = self.openerp.pool
