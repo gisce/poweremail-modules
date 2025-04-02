@@ -56,7 +56,7 @@ class TestDownloadAuditTrail(testing.OOTestCaseWithCursor):
                 'certificat': True,
             }, context=context)
 
-            pdf = pem_mailbox_obj.download_signaturit_document(self.cursor, self.uid, pem_mailbox_id, context=context)
+            pdf = pem_mailbox_obj.download_signaturit_email_audit_trail_document(self.cursor, self.uid, pem_mailbox_id, context=context)
             pdf_contents = pdf.get('datas', {}).get('pdf', False)
             self.assertTrue(pdf_contents)
             self.assertEqual(b64decode(pdf_contents), final_expected_file)
