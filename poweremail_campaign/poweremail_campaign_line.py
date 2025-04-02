@@ -24,6 +24,17 @@ class PoweremailCampaignLine(osv.osv):
         res = obj.read(cursor, uid, ids, ['model', 'name'], context)
         return [(r['model'], r['name']) for r in res]
 
+    def update_poweremail_callback_params(self, reference, ids_cbk, model_context, origin_ids, meta, template_id, context):
+        model_name, record_id_str = reference.split(',')
+        if model_name not in model_context:
+            model_context[model_name] = context.copy()
+            model_context[model_name]['pe_callback_origin_ids'] = {}
+        record_id = int(record_id_str)
+        ids_cbk[model_name] = ids_cbk.get(model_name, []) + [record_id]
+        model_context[model_name]['pe_callback_origin_ids'][record_id] = origin_ids
+        model_context[model_name]['meta'][record_id] = meta
+        model_context[model_name]['template_id'] = template_id
+
     def poweremail_callback(self, cursor, uid, ids, func, vals=None, context=None):
         """Crida el callback callbacks[func] del reference de ids
         """
@@ -37,25 +48,32 @@ class PoweremailCampaignLine(osv.osv):
             ('id', 'in', ids)
         ])
         ids_cbk = {}
-        ctx = context.copy()
-        ctx['pe_callback_origin_ids'] = {}
+        ctx = {}
+        meta = context.get('meta', {})
+
         for line_v in line_vs:
             if not line_v['ref']:
                 continue
-            meta = {}
-            model_name, record_id_str = line_v['ref'].split(',')
-            record_id = int(record_id_str)
-            ids_cbk[model_name] = ids_cbk.get(model_name, []) + [record_id]
-            ctx['pe_callback_origin_ids'][record_id] = line_v['id']
-            ctx['meta'][record_id] = meta
-            ctx['template_id'] = line_v['campaign_id.template_id']
+            if line_v['id'] in meta:
+                mail_meta = meta[line_v['id']]
+                if 'extra_ref' in mail_meta:
+                    self.update_poweremail_callback_params(
+                        mail_meta['extra_ref'], ids_cbk, ctx,
+                        context['pe_callback_origin_ids'][line_v['id']],
+                        meta, line_v['campaign_id.template_id'], context
+                    )
+
+            self.update_poweremail_callback_params(
+                line_v['ref'], ids_cbk, ctx, line_v['id'],
+                meta, line_v['campaign_id.template_id'], context
+            )
         for model in ids_cbk:
             src = self.pool.get(model)
             try:
                 if vals:
-                    getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], vals, ctx)
+                    getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], vals, ctx[model])
                 else:
-                    getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], ctx)
+                    getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], ctx[model])
             except AttributeError:
                 pass
 
