@@ -10,6 +10,7 @@ from tools.translate import _
 from datetime import datetime
 
 from poweremail_signaturit.poweremail_core import get_signaturit_client
+from base64 import b64encode
 
 
 class PoweremailMailbox(osv.osv):
@@ -92,6 +93,30 @@ class PoweremailMailbox(osv.osv):
 
     def get_email_opened_state(self, cursor, uid, context=None):
         return self.pool.get("res.config").get(cursor, uid, "signaturit_email_opened_state", "document_opened")
+
+    def download_signaturit_email_audit_trail_document(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
+        if isinstance(ids, (tuple, list)):
+            ids = ids[0]
+        pem_core_obj = self.pool.get('poweremail.core_accounts')
+
+        signature_id = self.read(cursor, uid, ids, ['certificat_signature_id'], context=context)['certificat_signature_id']
+        if not signature_id:
+            raise osv.except_osv(_(u"Error"), _(u"No hi ha el Signatureit ID"))
+
+        pdf = pem_core_obj.get_mail_audit_trail(cursor, uid, ids, signature_id, context=context)
+
+        datas = {
+            'pdf': b64encode(pdf),
+        }
+        return {
+            'type': 'ir.actions.report.xml',
+            'model': 'poweremail.mailbox',
+            'report_name': 'signature.email.download.audit.trail',
+            'datas': datas,
+            'context': context
+        }
 
     def _get_certificat_states(self, cursor, uid, context=None):
         res = super(PoweremailMailbox, self)._get_certificat_states(cursor, uid, context=context)

@@ -21,7 +21,7 @@ env:
   SCRIPTS_PATH: /home/ci_replicante/ci_scripts
   HELP_PATH: /home/ci_replicante/help
   CI_REPO: ${{ github.repository }}
-  CI_PULL_REQUEST: ${{ github.event.number }}
+  CI_PULL_REQUEST: ${{ github.event.pull_request.number || inputs.pr_number }}
 
 jobs:
   init:
