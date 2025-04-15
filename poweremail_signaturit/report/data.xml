@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<openerp>
+    <data>
+        <record model="ir.actions.report.xml" id="report_email_certificate">
+            <field name="name">Descarregar registre d'auditoria</field>
+            <field name="report_type">pdf</field>
+            <field name="report_name">signature.email.download.audit.trail</field>
+            <field name="model">poweremail.mailbox</field>
+            <field eval="0" name="auto"/>
+            <field eval="0" name="header"/>
+        </record>
+    </data>
+</openerp>
