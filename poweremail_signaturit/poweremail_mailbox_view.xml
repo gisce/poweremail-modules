@@ -16,7 +16,7 @@
                 <xpath expr="//field[@name='certificat_update_datetime']" position="after">
                     <group colspan="3" col="3">
                         <field name="certificat_signature_id" readonly="1"  select="2"/>
-                        <group attrs="{'readonly': [('folder','!=', 'outbox')]}" colspan="1">
+                        <group attrs="{'readonly': [('folder','!=', 'sent')]}" colspan="1">
                             <group attrs="{'readonly': [('certificat_signature_id', '=', False)]}" colspan="1">
                                 <button name="download_signaturit_email_audit_trail_document" string="Descarregar registre d'auditoria" icon="cloud-down" type="object" primary="1"/>
                             </group>
