@@ -30,6 +30,9 @@ class PoweremailSendWizard(osv.osv_memory):
         res = []
         ctx = context.copy()
         j_pool = JobsPool()
+        if wiz['single_email'] and len(context['src_rec_ids']) > 1:
+            # We send a single email for several records
+            context['src_rec_ids'] = context['src_rec_ids'][:1]
         # Copy the original list
         src_rec_ids = context.get('src_rec_ids', [])[:]
         len_src_rec_ids = len(src_rec_ids)
