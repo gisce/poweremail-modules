@@ -25,6 +25,7 @@ class PoweremailMailbox(osv.osv):
         ctx = context.copy()
         ctx['pe_callback_origin_ids'] = {}
         ctx['meta'] = {}
+        records_checked = context.get('records_checked', {})
         if vals:
             init_meta = vals.get('meta', {}) or {}
             if isinstance(init_meta, six.string_types):
@@ -42,20 +43,38 @@ class PoweremailMailbox(osv.osv):
                 meta = {}
 
             ref = i['reference'].split(',')
-            ids_cbk[ref[0]] = ids_cbk.get(ref[0], []) + [int(ref[1])]
-            ctx['pe_callback_origin_ids'][int(ref[1])] = i['id']
-            ctx['meta'][int(ref[1])] = meta
+            model_type = ref[0]
+            record_id = ref[1]
+            if not self.restrict_write_callback_from_previous_emails(cursor, uid, ref, func, vals, context=ctx):
+                ids_cbk[model_type] = ids_cbk.get(model_type, []) + [int(record_id)]
+                records_checked[model_type] = records_checked.get(model_type, []) + [int(record_id)]
+                context.update({
+                    'records_checked': records_checked
+                })
+            ctx['pe_callback_origin_ids'][int(record_id)] = i['id']
+            ctx['meta'][int(record_id)] = meta
         for model in ids_cbk:
             src = self.pool.get(model)
             try:
                 if vals:
-                    getattr(src, self.callbacks[func])(cursor, uid,
-                                                ids_cbk[model], vals, ctx)
+                    getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], vals, ctx)
                 else:
-                    getattr(src, self.callbacks[func])(cursor, uid,
-                                                ids_cbk[model], ctx)
+                    getattr(src, self.callbacks[func])(cursor, uid, ids_cbk[model], ctx)
             except AttributeError:
                 pass
+
+    def restrict_write_callback_from_previous_emails(self, cursor, uid, ref, func, vals={}, context=None):
+        if context is None:
+            context = {}
+        records_checked = context.get('records_checked', {})
+        restrict = True
+        model_type = ref[0]
+        record_id = ref[1]
+        if (not records_checked.get(model_type, [])
+                or (records_checked.get(model_type, []) and int(record_id) not in records_checked[model_type])
+                or func != 'write') or 'certificat_state' not in vals.keys():
+            restrict = False
+        return restrict
 
     def create(self, cursor, uid, vals, context=None):
         if context is None:
