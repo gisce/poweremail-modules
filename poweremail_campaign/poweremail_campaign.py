@@ -96,7 +96,7 @@ class PoweremailCampaign(osv.osv):
                 model_obj = self.pool.get(model)
                 record_ids = model_obj.search(cursor, uid, domain, context=context)
                 ctx = context.copy()
-                self.write(cursor, uid, camp_id, {'n_registres': len(record_ids)})
+                self.write(cursor, uid, camp_id, {'n_registres': len(record_ids)}, context=context)
                 # Crear campaign line per cada registre trobat
                 for record_id in tqdm(record_ids):
                     if pm_camp_vs['distinct_mails']:

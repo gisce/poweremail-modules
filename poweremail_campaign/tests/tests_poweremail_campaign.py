@@ -316,6 +316,7 @@ class TestPoweremailCampaign(testing.OOTestCase):
                 self.assertEqual(state['state'], 'to_send')
 
     def test_avoid_send_email(self):
+        # Es comprova si hi ha duplicats i es marca com 'avoid_duplicate'
         with Transaction().start(self.database) as txn:
             uid = txn.user
             cursor = txn.cursor
@@ -338,6 +339,7 @@ class TestPoweremailCampaign(testing.OOTestCase):
                 'template_id': template_id,
                 'name': "Poweremail Campaign Prova 1",
                 'distinct_mails': True,
+                'domain': [('id', 'in', [1, 2])]
             })
 
             camp_obj.update_linies_campanya(cursor, uid, [camp_id_1], context={'active_id': camp_id_1})
@@ -349,3 +351,5 @@ class TestPoweremailCampaign(testing.OOTestCase):
                 state = camp_line_obj.read(cursor, uid, linia, ['state'])['state']
                 estats.append(state)
             self.assertEqual(estats, ['to_send', 'avoid_duplicate'])
+            self.assertEqual(len(line_ids), 2)
+
