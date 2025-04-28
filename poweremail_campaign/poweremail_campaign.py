@@ -183,7 +183,7 @@ class PoweremailCampaign(osv.osv):
     _defaults = {
         'domain': lambda *a: '[]',
         'distinct_mails': lambda *a: False,
-        'n_registres': lambda *a: 0,
+        'n_registres': lambda *a: 1,
     }
 
 
