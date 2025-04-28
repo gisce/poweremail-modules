@@ -52,7 +52,7 @@ class PoweremailCampaign(osv.osv):
                 prog_sent = 0.0
                 prog_created_mails = 0.0
             else:
-                prog_created = (float(len(created_data)) / float(len(total_data))) * 100
+                prog_created = (float(len(created_data)) / float(campanya.n_registres)) * 100
                 prog_sent = (float(len(sent_data)) / float(len(total_data))) * 100
                 prog_created_mails = (float(len(created_mails)) / float(len(total_data))) * 100
 
@@ -96,6 +96,7 @@ class PoweremailCampaign(osv.osv):
                 model_obj = self.pool.get(model)
                 record_ids = model_obj.search(cursor, uid, domain, context=context)
                 ctx = context.copy()
+                self.write(cursor, uid, camp_id, {'n_registres': len(record_ids)})
                 # Crear campaign line per cada registre trobat
                 for record_id in tqdm(record_ids):
                     if pm_camp_vs['distinct_mails']:
@@ -115,8 +116,8 @@ class PoweremailCampaign(osv.osv):
         return True
 
     @job(queue=config.get('poweremail_render_queue', 'poweremail'))
-    def create_lines_async(self, cursor, uid, template_id, model, line_id, context=None):
-        self.create_lines_sync(cursor, uid, template_id, model, line_id, context=context)
+    def create_lines_async(self, cursor, uid, template_id, model, record_id, context=None):
+        self.create_lines_sync(cursor, uid, template_id, model, record_id, context=context)
         return True
 
     def create_lines_sync(self, cursor, uid, template_id, model, record_id, context=None):
@@ -175,12 +176,14 @@ class PoweremailCampaign(osv.osv):
         'create_date': fields.datetime('Create Date', readonly=1),
         'template_obj': fields.function(_ff_created_sent_object, multi='barra_progres', string='Object', type='char', size=64, method=True, readonly=1),
         'batch': fields.integer('Batch', help='Sends the indicated quantity of emails each time the "Send Emails" button is pressed. 0 to send all.'),
-        'distinct_mails': fields.boolean('Avoid same email', help='Check to avoid send repeated campaigns to the same email')
+        'distinct_mails': fields.boolean('Avoid same email', help='Check to avoid send repeated campaigns to the same email'),
+        'n_registres': fields.integer(string='total_registres')
     }
 
     _defaults = {
         'domain': lambda *a: '[]',
         'distinct_mails': lambda *a: False,
+        'n_registres': lambda *a: 0,
     }
 
 

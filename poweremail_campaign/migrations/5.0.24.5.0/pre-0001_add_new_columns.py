@@ -18,6 +18,13 @@ def up(cursor, installed_version):
             'poweremail_campaign': [('progress_generate_mails', 'float')]
         })
 
+    if column_exists(cursor, 'poweremail_campaign', 'n_registres'):
+        logger.info('Column n_registres already exists in poweremail_campaign. Passing...')
+    else:
+        add_columns(cursor, {
+            'poweremail_campaign': [('n_registres', 'integer')]
+        })
+
     # Crear les diferents vistes
     load_data_records(
         cursor, 'poweremail_campaign',
