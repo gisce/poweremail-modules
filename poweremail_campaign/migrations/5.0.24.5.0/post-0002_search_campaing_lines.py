@@ -18,7 +18,7 @@ def up(cursor, installed_version):
     camp_line_o = pool.get('poweremail.campaign.line')
 
     logger.info("Searching for campaigns")
-    campaign_ids = campaign_o.search([])
+    campaign_ids = campaign_o.search(cursor, uid, [])
 
     logger.info("Searching campaign lines")
 
