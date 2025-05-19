@@ -27,7 +27,7 @@ class PoweremailTemplateReference(osv.osv):
                 'src_model': src_model,
                 'view_type': 'form',
                 'domain': ("[('reference','=','" +
-                           src_model + ",%d'%active_id)]"),
+                           src_model + ",%d'%active_id),('template_id','=',id)]"),
                 'view_mode': 'tree,form',
             }
             # If already exists, update action, else create it
