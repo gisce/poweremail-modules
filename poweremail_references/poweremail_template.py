@@ -64,7 +64,7 @@ class PoweremailTemplateReference(osv.osv):
         action_obj = self.pool.get('ir.actions.act_window')
         value_obj = self.pool.get('ir.values')
 
-        template_brw = self.pool.get('poweremail.templates').browse(cursor, uid, ids[0])
+        template_brw = self.pool.get('poweremail.templates').browse(cursor, uid, ids[0], context=context)
 
         if template_brw.ref_ir_act_window_access:
             action_id = template_brw.ref_ir_act_window_access.id
