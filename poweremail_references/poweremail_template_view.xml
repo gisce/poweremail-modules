@@ -12,7 +12,10 @@
                         <field name="ref_ir_value_access" colspan="4"/>
                         <field name="ref_ir_act_window_access" colspan="4"/>
                         <group>
-                            <label string="" colspan="3"/>
+                            <label string="" colspan="2"/>
+                                <button name="remove_access_reference" colspan="1" string="Remove template emails link" type="object"
+                                    attrs="{'readonly':[('ref_ir_act_window_access', '=', False), ('ref_ir_value_access', '=', False)]}"
+                                    icon="minus" primary="1" danger="1" />
                             <button name="create_access_reference" colspan="1" string="Create template emails link" type="object" icon="plus" primary="1"/>
                         </group>
                     </page>
