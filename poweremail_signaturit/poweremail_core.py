@@ -158,7 +158,7 @@ class PoweremailCore(osv.osv):
             context = {}
 
         res = False
-        client = get_signaturit_client()
+        client = self.get_signaturit_client(cr, uid, ids, context=context)
         mail_json = client.get_email(audit_trail_id)
         certificates = []
         if mail_json:
