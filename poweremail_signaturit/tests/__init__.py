@@ -14,41 +14,11 @@ from tools import config
 
 class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
 
-    signaturit_sandbox_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
-    def get_sandbox_client(self):
-        client = SignaturitClient(self.signaturit_sandbox_token, False)
-        return client
-
-    def test_POST_email_simple(self):
-        cursor = self.cursor
-        uid = self.uid
-        pool = self.openerp.pool
-        #client = self.get_sandbox_client()
-
-        # He comentat el test per no fer una crida sempre que es facin els tests, pero ho deixo per veure com es pot cridar la api
-
-        # res = client.create_email(
-        #     files=[],
-        #     recipients=[{'name': 'Eduard', 'email': 'eberloso@gisce.net'}],
-        #     subject="Email Certificat Simple",
-        #     body="Aixo es un email <b>certificat</b>",
-        #     params={'type': "open_email"}
-        # )
-        # self.assertTrue(res['id'])
-        # self.assertEqual(res['certificates'][0]['status'], u'in_queue')
-        # self.assertEqual(res['certificates'][0]['name'], u'Eduard')
-        # self.assertEqual(res['certificates'][0]['email'], u'eberloso@gisce.net')
-
     @mock.patch("signaturit_sdk.signaturit_client.SignaturitClient.get_email")
-    @mock.patch("poweremail_signaturit.poweremail_core.get_signaturit_client")
-    def test_update_poweremail_certificat_state(self, mocked_get_signaturit_client, mocked):
+    def test_update_poweremail_certificat_state(self, mocked):
         cursor = self.cursor
         uid = self.uid
         pool = self.openerp.pool
-        client = self.get_sandbox_client()
-        config['signaturit_token'] = 'RANDOM_RANDOM'
-        mocked_get_signaturit_client.return_value = client
 
         poweracc_o = pool.get("poweremail.core_accounts")
         poweremail_o = pool.get("poweremail.mailbox")
@@ -108,16 +78,12 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
             self.assertEqual(poweremail_o.read(cursor, uid, pwid, ['certificat_state'])['certificat_state'], "document_opened")
 
     @mock.patch("signaturit_sdk.signaturit_client.SignaturitClient.create_email")
-    @mock.patch("poweremail_signaturit.poweremail_core.get_signaturit_client")
-    def test_send_mail_certificat_fails_and_returns_false(self, mocked_get_signaturit_client, mock_create_email):
+    def test_send_mail_certificat_fails_and_returns_false(self, mock_create_email):
         cursor = self.cursor
         uid = self.uid
         pool = self.openerp.pool
         poweracc_o = pool.get("poweremail.core_accounts")
         poweremail_o = pool.get("poweremail.mailbox")
-
-        client = self.get_sandbox_client()
-        mocked_get_signaturit_client.return_value = client
 
         ids = [
             poweracc_o.create(cursor, uid, {
@@ -148,17 +114,14 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
         )
         self.assertFalse(res)
 
-    @mock.patch("poweremail_signaturit.poweremail_core.get_signaturit_client")
     @mock.patch("signaturit_sdk.signaturit_client.SignaturitClient.create_email")
-    def test_send_mail_certificat_ok_and_returns_true(self, mocked_create_email, mocked_get_signaturit_client):
+    def test_send_mail_certificat_ok_and_returns_true(self, mocked_create_email):
         cursor = self.cursor
         uid = self.uid
         pool = self.openerp.pool
         poweracc_o = pool.get("poweremail.core_accounts")
         poweremail_o = pool.get("poweremail.mailbox")
 
-        client = self.get_sandbox_client()
-        mocked_get_signaturit_client.return_value = client
         # Per evitar anar enviant emails, fem un mock id espres validem que es crida com esperem
         mocked_create_email.return_value = {'id': "123456789"}
 
