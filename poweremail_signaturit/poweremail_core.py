@@ -22,6 +22,40 @@ class PoweremailCore(osv.osv):
 
     _inherit = 'poweremail.core_accounts'
 
+    def get_signaturit_client(self, cursor, uid, poweremail_account_id, context=None):
+        """
+        :param cursor:
+        :param uid:
+        :param poweremail_account_id: ID de poweremail.core_accounts
+        :param context:
+        :return: Retorna les credencials de signaturit a utilitzar per enviar el poweremail_id. Per saber quines
+        credencials utilitzar es revisa el compte de poweremail vinculat al poweremail_id i s'obté la seva compañia.
+        Llavors es busca la conta de signaturit donada d'alta per aquella companyia.
+        No pot haver-hi més de un compte per companyia, per tant nomes hauria de haer-hi un resultat.
+        """
+        if isinstance(poweremail_account_id, (list, tuple)):
+            poweremail_account_id = poweremail_account_id[0]
+        # Compatibilitat enrera: si no existeix el model "giscedata.signature.provider.account" vol dir que el
+        # refactor de Signaturit no està instalat al ERP, per tant continuarem funcionant com abans.
+        refactor_signaturit_disponible = self.pool.get('giscedata.signature.provider.account')
+        if refactor_signaturit_disponible:
+            # El import el fem aqui perque si el refactor no esta instalat fallarà
+            from giscedata_signatura_documents_signaturit.giscedata_signature_clients import SignatureFactory
+            pro_obj = self.pool.get('giscedata.signatura.process')
+            provider = "signaturit"  # De moment nomes tenim emails certificats amb signaturit
+            company_id = 1
+            if 'company_id' in self._columns.keys():
+                info = self.read(cursor, uid, poweremail_account_id, ['company_id'], context=context)
+                if info['company_id']:
+                    company_id = info['company_id'][0]
+            signature_account_id = pro_obj.get_signature_account_id(cursor, uid, company_id, provider, context=context)
+            sclient = SignatureFactory.instantiate_signature(cursor, provider=provider, account_id=signature_account_id)
+            client = sclient.get_client()
+        else:
+            # Legacy, quan tots els ERPs estiguin a la v25.9 es podrar eliminar
+            client = get_signaturit_client()
+        return client
+
     def send_mail_certificat(self, cr, uid, ids, addresses, subject='', body=None, payload=None, context=None):
         """
         :return: 'True' si s'ha pogut enviar el email, altrament un missatge de error
@@ -36,7 +70,7 @@ class PoweremailCore(osv.osv):
                 html = html.replace('\n', '<br/>')
             return html
 
-        client = get_signaturit_client()
+        client = self.get_signaturit_client(cr, uid, ids, context=context)
         if body is None:
             body = {}
         if context is None:
