@@ -17,6 +17,12 @@ class PoweremailMailbox(osv.osv):
 
     _inherit = 'poweremail.mailbox'
 
+    def get_signaturit_client(self, cursor, uid, pw_id, context=None):
+        if isinstance(pw_id, (list, tuple)):
+            pw_id = pw_id[0]
+        pem_account_id = self.read(cursor, uid, pw_id, ['pem_account_id'], context=context)['pem_account_id'][0]
+        return self.pool.get("poweremail.core_accounts").get_signaturit_client(cursor, uid, pem_account_id, context=context)
+
     def update_poweremail_certificate(
             self, cursor, uid, pe_id, final_certificat_state,  context=None):
         if context is None:
@@ -30,7 +36,7 @@ class PoweremailMailbox(osv.osv):
             poweremail_info = cursor.dictfetchone()
         except LockNotAvailable:
             return False
-        client = get_signaturit_client()
+        client = self.get_signaturit_client(cursor, uid, pe_id, context=context)
         res = client.get_email(poweremail_info['certificat_signature_id'])
         if "id" not in res:
             return False

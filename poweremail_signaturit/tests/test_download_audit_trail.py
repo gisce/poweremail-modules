@@ -28,7 +28,7 @@ class TestDownloadAuditTrail(testing.OOTestCaseWithCursor):
             'poweremail_signaturit', 'tests', 'fixtures', 'test_certified_email_audit_trail.pdf'
         )
         fake_certificate = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        with mock.patch('poweremail_signaturit.poweremail_core.get_signaturit_client') as mock_client:
+        with mock.patch('poweremail_signaturit.poweremail_core.PoweremailCore.get_signaturit_client') as mock_client:
             mock_client.return_value = mock.MagicMock()
             with open(file_path, 'rb') as f:
                 mock_client.return_value.download_email_audit_trail.return_value = final_expected_file = f.read()
