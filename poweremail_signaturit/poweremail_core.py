@@ -38,9 +38,7 @@ class PoweremailCore(osv.osv):
         # Compatibilitat enrera: si no existeix el model "giscedata.signature.provider.account" vol dir que el
         # refactor de Signaturit no està instalat al ERP, per tant continuarem funcionant com abans.
         refactor_signaturit_disponible = self.pool.get('giscedata.signature.provider.account')
-        if refactor_signaturit_disponible:
-            # El import el fem aqui perque si el refactor no esta instalat fallarà
-            from giscedata_signatura_documents_signaturit.giscedata_signature_clients import SignatureFactory
+        if refactor_signaturit_disponible and hasattr(refactor_signaturit_disponible, "get_client"):
             pro_obj = self.pool.get('giscedata.signatura.process')
             provider = "signaturit"  # De moment nomes tenim emails certificats amb signaturit
             company_id = 1
@@ -49,8 +47,7 @@ class PoweremailCore(osv.osv):
                 if info['company_id']:
                     company_id = info['company_id'][0]
             signature_account_id = pro_obj.get_signature_account_id(cursor, uid, company_id, provider, context=context)
-            sclient = SignatureFactory.instantiate_signature(cursor, provider=provider, account_id=signature_account_id)
-            client = sclient.get_client()
+            client = refactor_signaturit_disponible.get_client(cursor, uid, signature_account_id, context=context)
         else:
             # Legacy, quan tots els ERPs estiguin a la v25.9 es podrar eliminar
             client = get_signaturit_client()
