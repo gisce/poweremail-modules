@@ -125,6 +125,7 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
         # Per evitar anar enviant emails, fem un mock id espres validem que es crida com esperem
         mocked_create_email.return_value = {'id': "123456789"}
 
+        compte_signaturit_company_1 = pool.get("ir.model.data").get_object_reference(cursor, uid, "giscedata_signatura_documents_signaturit", "giscedata_signature_provider_account_0001")[1]
         ids = [
             poweracc_o.create(cursor, uid, {
                 'email_id': "algunmail@gisce.net",
@@ -158,3 +159,14 @@ class TestPoweremailSignaturit(testing.OOTestCaseWithCursor):
             body=body['html'],
             params={'type': "open_document", "recipients": {}}
         )
+        # Si feia el mock de les dos coses alhora no ho sabia fer funcionar be perque un mock crida l'altre i es feia un lio
+        with mock.patch('giscedata_signatura_documents_signaturit.giscedata_signature_providers.GiscedataSignatureProviderAccount.get_client') as mocked_get_client:
+            poweracc_o.send_mail_certificat(
+                cursor, uid, ids, addresses, subject=subject, body=body, payload=payload, context=context
+            )
+            mocked_get_client.assert_called_with(
+                cursor,
+                uid,
+                compte_signaturit_company_1,
+                context={'poweremail_id': pwid}
+            )
