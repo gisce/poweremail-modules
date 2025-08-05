@@ -26,7 +26,7 @@ class PoweremailTemplateReference(osv.osv):
                 'res_model': 'poweremail.mailbox',
                 'src_model': src_model,
                 'view_type': 'form',
-                'domain': ("[('reference','=','{src_model},%d'%active_id),('template_id','=', {model_id})]".format(
+                'domain': ("[('reference', '=', '{src_model},%d' % active_id),('template_id', '=', {model_id})]".format(
                     src_model=src_model,
                     model_id=id
                 )),
