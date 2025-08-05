@@ -60,6 +60,22 @@ class PoweremailTemplateReference(osv.osv):
 
         return True
 
+    def remove_access_reference(self, cursor, uid, ids, context=None):
+        if not isinstance(ids, (list, tuple)):
+            ids = [ids]
+
+        for template_id in ids:
+            template_brw = self.simple_browse(cursor, uid, template_id, context=context)
+
+            if template_brw.ref_ir_act_window_access:
+                template_brw.write({'ref_ir_act_window_access': False})
+                template_brw.ref_ir_act_window_access.unlink()
+
+            if template_brw.ref_ir_value_access:
+                template_brw.write({'ref_ir_value_access': False})
+                template_brw.ref_ir_value_access.unlink()
+
+
     _columns = {
         'ref_ir_act_window_access': fields.many2one(
                                         'ir.actions.act_window',
