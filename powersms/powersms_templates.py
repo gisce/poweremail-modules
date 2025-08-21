@@ -172,7 +172,7 @@ class PowersmsTemplates(osv.osv):
         return _result, _format
 
     _columns = {
-        "name": fields.char("Name of Template", size=100, required=True),
+        "name": fields.char("Name of Template", size=200, required=True),
         "object_name": fields.many2one("ir.model", "Model"),
         "def_body_text": fields.text(
             "Standard Body (Text)", help="The text of the sms.", translate=True
