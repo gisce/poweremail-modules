@@ -9,6 +9,7 @@
         'base',
         'base_extended',
         'poweremail_certificat',
+        'giscedata_signatura_documents_signaturit',
     ],
     "init_xml": [],
     "demo_xml": [],
