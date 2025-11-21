@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 from osv import osv, fields
 from osv.osv import TransactionExecute
@@ -87,8 +88,11 @@ class PoweremailCampaignLine(osv.osv):
         # ids -> ids de les linies
         # vals['folder'] -> si hi posa "sent", marcar com a enviada la factura (cridar powermail_write_callback)
         self.poweremail_callback(cursor, uid, ids, 'write', vals, context=context)
-        if vals.get('folder', False) and vals.get('folder', False) == 'sent':
-            self.write(cursor, uid, ids, {'state': 'sent'})
+        if vals.get('folder', False):
+            if vals['folder'] == 'sent':
+                self.write(cursor, uid, ids, {'state': 'sent'})
+            elif vals['folder'] == 'error':
+                self.write(cursor, uid, ids, {'state': 'sending_error'})
 
     def poweremail_unlink_callback(self, cursor, uid, ids, context=None):
         self.poweremail_callback(cursor, uid, ids, 'unlink', context=context)

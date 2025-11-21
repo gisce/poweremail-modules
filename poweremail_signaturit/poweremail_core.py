@@ -131,7 +131,8 @@ class PoweremailCore(osv.osv):
             with open(document_path, 'w') as tmp_document:
                 tmp_document.write(base64.b64decode(fdata))
                 documents.append(document_path)
-
+        if len(documents) > 1:
+            raise osv.except_osv("Error", _(u"No se puede envia más de un documento en un email certificado. Se estaban intentando enviar {0} documentos.").format(len(documents)))
         response = client.create_email(
             files=documents,
             recipients=recipients,
