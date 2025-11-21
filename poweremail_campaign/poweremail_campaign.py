@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 from osv import osv, fields
 from poweremail.poweremail_template import get_value
