@@ -10,6 +10,31 @@ from tools.translate import _
 from datetime import datetime
 
 from poweremail_signaturit.poweremail_core import get_signaturit_client
+from base64 import b64encode
+
+SIGNATURIT_STATES_ORDER = {
+    'email_processed': 10,
+    'email_delivered': 20,
+    'email_bounced': 30,
+    'email_deferred': 40,
+    'reminder_email_processed': 50,
+    'reminder_email_delivered': 60,
+    'sms_processed': 70,
+    'sms_delivered': 80,
+    'password_sms_processed': 90,
+    'password_sms_delivered': 100,
+    'document_opened': 110,
+    'document_signed': 120,
+    'document_completed': 130,
+    'audit_trail_completed': 140,
+    'document_declined': 150,
+    'document_expired': 160,
+    'document_canceled': 170,
+    'photo_added': 180,
+    'voice_added': 190,
+    'file_added': 200,
+    'photo_id_added': 210,
+}
 
 
 class PoweremailMailbox(osv.osv):
@@ -23,7 +48,7 @@ class PoweremailMailbox(osv.osv):
         self_q = self.q(cursor, uid)
         try:
             q_sql = self_q.select(
-                ['id', 'certificat_signature_id'], for_=For('UPDATE', nowait=True)
+                ['id', 'certificat_signature_id', 'certificat_state'], for_=For('UPDATE', nowait=True)
             ).where([('id', '=', pe_id)])
             cursor.execute(*q_sql)
             poweremail_info = cursor.dictfetchone()
@@ -44,9 +69,11 @@ class PoweremailMailbox(osv.osv):
             certificat_state_to_write = final_certificat_state
         # Si no tenim lestat final, l'estat mes recent
         else:
-            certificat_state_to_write = max(email_events, key=lambda x: x[0])[1]
-        self.write(cursor, uid, poweremail_info['id'],
-                   {'certificat_state': certificat_state_to_write})
+            # Ordenem per datetime, i si es igual, per prioritats d'estats
+            certificat_state_to_write = max(email_events, key=lambda x: (x[0], SIGNATURIT_STATES_ORDER.get(x[1], -1)))[1]
+        if poweremail_info['certificat_state'] != certificat_state_to_write:
+            self.write(cursor, uid, poweremail_info['id'],{'certificat_state': certificat_state_to_write})
+        return True
 
     def update_poweremail_certificat_state(self, cursor, uid, ids, context=None):
         res = super(PoweremailMailbox, self).update_poweremail_certificat_state(cursor, uid, ids, context=context)
@@ -92,6 +119,30 @@ class PoweremailMailbox(osv.osv):
 
     def get_email_opened_state(self, cursor, uid, context=None):
         return self.pool.get("res.config").get(cursor, uid, "signaturit_email_opened_state", "document_opened")
+
+    def download_signaturit_email_audit_trail_document(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
+        if isinstance(ids, (tuple, list)):
+            ids = ids[0]
+        pem_core_obj = self.pool.get('poweremail.core_accounts')
+
+        signature_id = self.read(cursor, uid, ids, ['certificat_signature_id'], context=context)['certificat_signature_id']
+        if not signature_id:
+            raise osv.except_osv(_(u"Error"), _(u"No hi ha el Signatureit ID"))
+
+        pdf = pem_core_obj.get_mail_audit_trail(cursor, uid, ids, signature_id, context=context)
+
+        datas = {
+            'pdf': b64encode(pdf),
+        }
+        return {
+            'type': 'ir.actions.report.xml',
+            'model': 'poweremail.mailbox',
+            'report_name': 'signature.email.download.audit.trail',
+            'datas': datas,
+            'context': context
+        }
 
     def _get_certificat_states(self, cursor, uid, context=None):
         res = super(PoweremailMailbox, self)._get_certificat_states(cursor, uid, context=context)
