@@ -162,7 +162,7 @@ class TestPoweremailCampaign(testing.OOTestCase):
 
             self.assertEqual(num_linies_pre, 1)
 
-            camp_obj.update_linies_campanya(cursor, uid, [camp_id_1])
+            camp_obj.update_linies_campanya(cursor, uid, [camp_id_1], context={'active_id': camp_id_1})
 
             pm_camp_brw = camp_obj.browse(cursor, uid, camp_id_1)
             domain = eval(pm_camp_brw.domain)
@@ -286,7 +286,7 @@ class TestPoweremailCampaign(testing.OOTestCase):
             for state in states:
                 self.assertEqual(state['state'], 'to_send')
 
-            camp_obj.update_linies_campanya(cursor, uid, [camp_id_1])
+            camp_obj.update_linies_campanya(cursor, uid, [camp_id_1], context={'active_id': camp_id_1})
 
             # Lines actualitzades, una d'elles ha de tenir l'state a 'avoid_duplicate'
             estats = []
@@ -306,7 +306,7 @@ class TestPoweremailCampaign(testing.OOTestCase):
             camp_line_obj.create(cursor, uid, {'campaign_id': camp_id_2})
             camp_line_obj.create(cursor, uid, {'campaign_id': camp_id_2})
 
-            camp_obj.update_linies_campanya(cursor, uid, [camp_id_2])
+            camp_obj.update_linies_campanya(cursor, uid, [camp_id_2], context={'active_id': camp_id_2})
 
             # Les dues línies tenen el camp state a 'to_send'
             linies_ids = camp_obj.read(cursor, uid, camp_id_2, ['reference_ids'])['reference_ids']
