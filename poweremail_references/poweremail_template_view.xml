@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
-	<data>
-		<record model="ir.ui.view" id="poweremail_template_access_form">
+    <data>
+        <record model="ir.ui.view" id="poweremail_template_access_form">
             <field name="name">poweremail.templates.access.form</field>
             <field name="model">poweremail.templates</field>
             <field name="type">form</field>
             <field name="inherit_id" ref="poweremail.poweremail_template_form"/>
             <field name="arch" type="xml">
-            	<field name="ref_ir_value" position="after">
-					<field name="ref_ir_value_access" colspan="2"/>
-					<button name="create_access_reference" colspan="1" string="Create Direct Access" type="object"/>
-					<field name="ref_ir_act_window_access" colspan="2"/>
-            	</field>
+                <page string="Wizard send email" position="after">
+                    <page string="Template emails">
+                        <field name="ref_ir_value_access" colspan="4"/>
+                        <field name="ref_ir_act_window_access" colspan="4"/>
+                        <group>
+                            <label string="" colspan="2"/>
+                                <button name="remove_access_reference" colspan="1" string="Remove template emails link" type="object"
+                                    attrs="{'readonly':[('ref_ir_act_window_access', '=', False), ('ref_ir_value_access', '=', False)]}"
+                                    icon="minus" primary="1" danger="1" />
+                            <button name="create_access_reference" colspan="1" string="Create template emails link" type="object" icon="plus" primary="1"/>
+                        </group>
+                    </page>
+                </page>
             </field>
-    	</record>
-	</data>
+        </record>
+    </data>
 </openerp>

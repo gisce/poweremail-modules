@@ -314,3 +314,48 @@ class TestPoweremailCampaign(testing.OOTestCase):
             states = camp_line_obj.read(cursor, uid, linies_ids, ['state'])
             for state in states:
                 self.assertEqual(state['state'], 'to_send')
+
+    def test_poweremail_write_callback_error_when_missing_recipient(self):
+        with Transaction().start(self.database) as txn:
+            uid = txn.user
+            cursor = txn.cursor
+
+            camp_obj = self.openerp.pool.get('poweremail.campaign')
+            camp_line_obj = self.openerp.pool.get('poweremail.campaign.line')
+            mailbox_obj = self.openerp.pool.get('poweremail.mailbox')
+            imd_obj = self.openerp.pool.get('ir.model.data')
+
+            template_id = imd_obj.get_object_reference(
+                cursor, uid, 'poweremail_campaign',
+                'default_template_poweremail'
+            )[1]
+            core_accounts_id = imd_obj.get_object_reference(
+                cursor, uid, 'poweremail_campaign', 'default_core_accounts'
+            )[1]
+
+            # Creem un mailbox sense destinatari
+            mailbox_id = mailbox_obj.create(cursor, uid, {
+                'pem_account_id': core_accounts_id,
+                'pem_subject': "Mail sense destinatari",
+                # 'pem_to' no informat
+            })
+
+            # Creem campanya i línia amb aquest mailbox
+            camp_id = camp_obj.create(cursor, uid, {
+                'template_id': template_id,
+                'name': "Campanya Error Recipient"
+            })
+            line_id = camp_line_obj.create(cursor, uid, {
+                'campaign_id': camp_id,
+                'mail_id': mailbox_id,
+                'state': 'to_send'
+            })
+
+            # Simulem el callback amb folder='error'
+            camp_line_obj.poweremail_write_callback(
+                cursor, uid, [line_id], {'folder': 'error'}, context={}
+            )
+
+            # Comprovem que l’estat ha canviat correctament
+            state = camp_line_obj.read(cursor, uid, line_id, ['state'])['state']
+            self.assertEqual(state, 'sending_error')

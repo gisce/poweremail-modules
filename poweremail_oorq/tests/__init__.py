@@ -256,3 +256,31 @@ class TestEnqueue(testing.OOTestCaseWithCursor):
             first_job.args[3:6],
             ('poweremail.templates', 'generate_mail_in_background', tmpl_id)
         )
+
+    def test_send_wizard_single_email(self):
+        imd_obj = self.openerp.pool.get('ir.model.data')
+        send_obj = self.openerp.pool.get('poweremail.send.wizard')
+
+        cursor = self.cursor
+        uid = self.uid
+        partner_id = imd_obj.get_object_reference(
+            cursor, uid, 'base', 'res_partner_asus'
+        )[1]
+
+        tmpl_id = self.create_template()
+
+        ctx = {
+            'active_id': partner_id,
+            'active_ids': [partner_id] * 4,
+            'src_rec_ids': [partner_id] * 4,
+            'src_model': 'res.partner',
+            'template_id': tmpl_id
+        }
+
+        wiz_id = send_obj.create(cursor, uid, {'single_email': True}, context=ctx)
+        wiz = send_obj.browse(cursor, uid, wiz_id)
+
+        ctx2 = ctx.copy()
+        ctx2['save_async'] = True
+        wiz.save_to_mailbox(context=ctx2)
+        self.assertEqual(len(self.q), 1)

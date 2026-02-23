@@ -27,7 +27,7 @@ class PoweremailMailbox(osv.osv):
         ctx['meta'] = {}
         if vals:
             init_meta = vals.get('meta', {}) or {}
-            if isinstance(init_meta, basestring):
+            if isinstance(init_meta, six.string_types):
                 init_meta = json.loads(init_meta)
         else:
             init_meta = {}
@@ -74,47 +74,6 @@ class PoweremailMailbox(osv.osv):
         self.poweremail_callback(cursor, uid, pe_id, 'create', vals, context)
         return pe_id
 
-    def validate_referenced_object_exists(self, cursor, uid, id, vals, context=None):
-        ret = True
-        fields = ['reference']
-        result = self._read_flat(cursor, uid, id, fields, context, '_classic_read')
-        for r in result:
-            if 'reference' in r.keys():
-                v = r['reference']
-                if v:
-                    model, ref_id = v.split(',')
-                    ref_obj = self.pool.get(model)
-
-                    if ref_id != '0':
-                        id_exist = ref_obj.search(cursor, 1, [
-                            ('id', '=', ref_id)
-                        ], context={'active_test': False})
-                        if not id_exist:
-                            ret = False
-        return ret
-
-    def read(self, cursor, uid, ids, fields=None, context=None, load='_classic_read'):
-        if context is None:
-            context = {}
-        select = ids
-        if isinstance(ids, six.integer_types):
-            select = [ids]
-        valid_select = []
-        for id in select:
-            res = self.validate_referenced_object_exists(cursor, uid, [id], fields, context=None)
-            if res:
-                valid_select.append(id)
-            else:
-                super(PoweremailMailbox,
-                        self).unlink(cursor, uid, [id], context)
-        ret = []
-        if valid_select:
-            ret = super(PoweremailMailbox,
-                        self).read(cursor, uid, valid_select, fields, context, load)
-        if isinstance(ids, six.integer_types) and ret:
-            return ret[0]
-        return ret
-
     def write(self, cursor, uid, ids, vals, context=None):
         if context is None:
             context = {}
@@ -122,19 +81,19 @@ class PoweremailMailbox(osv.osv):
         if meta:
             vals['meta'] = json.dumps(meta)
         self.poweremail_callback(cursor, uid, ids, 'write', vals, context)
-        ret = super(PoweremailMailbox,
-                     self).write(cursor, uid, ids, vals, context)
+        ret = super(PoweremailMailbox, self).write(cursor, uid, ids, vals, context)
         return ret
 
     def unlink(self, cursor, uid, ids, context=None):
         if context is None:
             context = {}
         self.poweremail_callback(cursor, uid, ids, 'unlink', context=context)
-        ret = super(PoweremailMailbox,
-                     self).unlink(cursor, uid, ids, context)
+        ret = super(PoweremailMailbox, self).unlink(cursor, uid, ids, context)
         return ret
 
-    def _get_models(self, cursor, uid, context={}):
+    def _get_models(self, cursor, uid, context=None):
+        if context is None:
+            context = {}
         cursor.execute('select m.model, m.name from ir_model m order by m.model')
         return cursor.fetchall()
 

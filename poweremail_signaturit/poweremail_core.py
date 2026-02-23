@@ -22,6 +22,37 @@ class PoweremailCore(osv.osv):
 
     _inherit = 'poweremail.core_accounts'
 
+    def get_signaturit_client(self, cursor, uid, poweremail_account_id, context=None):
+        """
+        :param cursor:
+        :param uid:
+        :param poweremail_account_id: ID de poweremail.core_accounts
+        :param context:
+        :return: Retorna les credencials de signaturit a utilitzar per enviar el poweremail_id. Per saber quines
+        credencials utilitzar es revisa el compte de poweremail vinculat al poweremail_id i s'obté la seva compañia.
+        Llavors es busca la conta de signaturit donada d'alta per aquella companyia.
+        No pot haver-hi més de un compte per companyia, per tant nomes hauria de haer-hi un resultat.
+        """
+        if isinstance(poweremail_account_id, (list, tuple)):
+            poweremail_account_id = poweremail_account_id[0]
+        # Compatibilitat enrera: si no existeix el model "giscedata.signature.provider.account" vol dir que el
+        # refactor de Signaturit no està instalat al ERP, per tant continuarem funcionant com abans.
+        refactor_signaturit_disponible = self.pool.get('giscedata.signature.provider.account')
+        if refactor_signaturit_disponible and hasattr(refactor_signaturit_disponible, "get_client"):
+            pro_obj = self.pool.get('giscedata.signatura.process')
+            provider = "signaturit"  # De moment nomes tenim emails certificats amb signaturit
+            company_id = 1
+            if 'company_id' in self._columns.keys():
+                info = self.read(cursor, uid, poweremail_account_id, ['company_id'], context=context)
+                if info['company_id']:
+                    company_id = info['company_id'][0]
+            signature_account_id = pro_obj.get_signature_account_id(cursor, uid, company_id, provider, context=context)
+            client = refactor_signaturit_disponible.get_client(cursor, uid, signature_account_id, context=context)
+        else:
+            # Legacy, quan tots els ERPs estiguin a la v25.9 es podrar eliminar
+            client = get_signaturit_client()
+        return client
+
     def send_mail_certificat(self, cr, uid, ids, addresses, subject='', body=None, payload=None, context=None):
         """
         :return: 'True' si s'ha pogut enviar el email, altrament un missatge de error
@@ -36,7 +67,7 @@ class PoweremailCore(osv.osv):
                 html = html.replace('\n', '<br/>')
             return html
 
-        client = get_signaturit_client()
+        client = self.get_signaturit_client(cr, uid, ids, context=context)
         if body is None:
             body = {}
         if context is None:
@@ -100,7 +131,8 @@ class PoweremailCore(osv.osv):
             with open(document_path, 'w') as tmp_document:
                 tmp_document.write(base64.b64decode(fdata))
                 documents.append(document_path)
-
+        if len(documents) > 1:
+            raise osv.except_osv("Error", _(u"No se puede envia más de un documento en un email certificado. Se estaban intentando enviar {0} documentos.").format(len(documents)))
         response = client.create_email(
             files=documents,
             recipients=recipients,
@@ -117,6 +149,23 @@ class PoweremailCore(osv.osv):
             res = True
         if "error" in response:
             res = response.get('error_message', response['error'])
+        return res
+
+    def get_mail_audit_trail(self, cr, uid, ids, audit_trail_id, context=None):
+        if context is None:
+            context = {}
+
+        res = False
+        client = self.get_signaturit_client(cr, uid, ids, context=context)
+        mail_json = client.get_email(audit_trail_id)
+        certificates = []
+        if mail_json:
+            certificates = mail_json.get('certificates', [])
+        if not certificates:
+            raise osv.except_osv(_("Error"), _("No hi ha certificats"))
+        for certificat in certificates:  # només n'hi hauria d'haber 1
+            certificates_id = certificat.get('id', None)
+            res = client.download_email_audit_trail(audit_trail_id, certificates_id)
         return res
 
 
