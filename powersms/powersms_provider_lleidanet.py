@@ -32,8 +32,9 @@ class PowersmsProviderLleidaNet(osv.osv):
         values = account_obj.read(cursor, uid, account_id, ["api_uname", "api_pass"])
         c = Client(user=str(values["api_uname"]), password=str(values["api_pass"]))
         headers = {
-            "content-type": "application/x-www-form-urlencoded",
+            "content-type": "application/json",
             "accept": "application/json",
+            "Authorization": "x-api-key {}".format(str(values["api_pass"])),
         }
         json_body = self._get_json_body(numbers_to, body, from_name, context)
         response = c.API.post(resource="", json=json_body, headers=headers)
