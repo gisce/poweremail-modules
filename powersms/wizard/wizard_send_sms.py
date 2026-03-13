@@ -92,6 +92,12 @@ class PowersmsSendWizard(osv.osv_memory):
         else:  # Simple Mail: Gets computed template values
             return self.get_value(cr, uid, template, getattr(template, field), context)
 
+    def send_sms_button(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
+        self.send_sms(cursor, uid, ids, context=context)
+        return {"type": "ir.actions.act_window_close"}
+
     def send_sms(self, cursor, uid, ids, context=None):
         if context is None:
             context = {}
@@ -99,16 +105,17 @@ class PowersmsSendWizard(osv.osv_memory):
         folder = context.get("folder", "outbox")
         values = {"folder": folder}
         sms_ids = self.save_to_smsbox(cursor, uid, ids, context)
-
+        sent_succesfully = True
         if sms_ids:
             for sms_id in sms_ids:
                 if not smsbox_obj.is_valid(cursor, uid, sms_id):
                     values["folder"] = "drafts"
+                    sent_succesfully = False
                 else:
                     values["folder"] = folder
                 smsbox_obj.write(cursor, uid, [sms_id], values, context)
 
-        return {"type": "ir.actions.act_window_close"}
+        return sent_succesfully
 
     def get_end_value(self, cr, uid, src_rec_id, value, template, context=None):
         if context is None:

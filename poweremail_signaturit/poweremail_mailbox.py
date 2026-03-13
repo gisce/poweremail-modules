@@ -94,6 +94,12 @@ class PoweremailMailbox(osv.osv):
     def get_email_opened_state(self, cursor, uid, context=None):
         return self.pool.get("res.config").get(cursor, uid, "signaturit_email_opened_state", "document_opened")
 
+    def get_email_not_delivered_state(self, cursor, uid, context=None):
+        return 'bounce'
+
+    def get_email_lost_state(self, cursor, uid, context=None):
+        return 'email_bounced'
+
     def download_signaturit_email_audit_trail_document(self, cursor, uid, ids, context=None):
         if context is None:
             context = {}
