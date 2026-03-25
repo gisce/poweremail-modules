@@ -57,18 +57,12 @@ class PoweremailSendWizard(osv.osv_memory):
         for rec_id in new_rec_ids:
             ctx['screen_vals'] = wiz
             ctx['src_rec_ids'] = rec_id
-            on_commit = ctx.pop('on_commit', False)
+            job_props = {
+                'on_commit': ctx.pop('on_commit', False),
+                'is_high_priority': wiz['priority'] == '2'
+            }
+            job = self.save_to_mailbox_async(cursor, uid, job_props, ctx)
 
-            if wiz['priority'] == '2':
-                if on_commit:
-                    job = self.save_to_mailbox_in_background_at_front_on_commit(cursor, uid, ctx)
-                else:
-                    job = self.save_to_mailbox_in_background_at_front(cursor, uid, ctx)
-            else:
-                if on_commit:
-                    job = self.save_to_mailbox_in_background_on_commit(cursor, uid, ctx)
-                else:
-                    job = self.save_to_mailbox_in_background(cursor, uid, ctx)
             j_pool.add_job(job)
             if 'screen_vals' in ctx:
                 del ctx['screen_vals']
@@ -89,9 +83,43 @@ class PoweremailSendWizard(osv.osv_memory):
             mailbox_obj.write(cursor, uid, to_write, {'folder': 'outbox'}, ctx)
         return res
 
-    def _save_to_mailbox_async(self, cursor, uid, context):
+    def save_to_mailbox_async(self, cursor, uid, job_props, context=None):
+        if context is None:
+            context = {}
+        on_commit = job_props.get('on_commit', False)
+        is_high_priority = job_props.get('is_high_priority', False)
+        if is_high_priority:
+            if on_commit:
+                job = self.save_to_mailbox_in_background_at_front_on_commit(cursor, uid, context)
+            else:
+                job = self.save_to_mailbox_in_background_at_front(cursor, uid, context)
+        else:
+            if on_commit:
+                job = self.save_to_mailbox_in_background_on_commit(cursor, uid, context)
+            else:
+                job = self.save_to_mailbox_in_background(cursor, uid, context)
+        return job
+
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), at_front=True)
+    def save_to_mailbox_in_background_at_front(self, cursor, uid, context):
+        return self._save_to_mailbox_async_base(cursor, uid, context)
+
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'))
+    def save_to_mailbox_in_background(self, cursor, uid, context):
+        return self._save_to_mailbox_async_base(cursor, uid, context)
+
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True)
+    def save_to_mailbox_in_background_on_commit(self, cursor, uid, context):
+        return self._save_to_mailbox_async_base(cursor, uid, context)
+
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True, at_front=True)
+    def save_to_mailbox_in_background_at_front_on_commit(self, cursor, uid, context):
+        return self._save_to_mailbox_async_base(cursor, uid, context)
+
+    def _save_to_mailbox_async_base(self, cursor, uid, context):
         """
             Method is not async by itself. Don't call it directly
+            Call it from a method with @job
         """
         mailbox_obj = self.pool.get('poweremail.mailbox')
         if not context:
@@ -109,22 +137,5 @@ class PoweremailSendWizard(osv.osv_memory):
         if not (context.get('save_async', False)):
             mailbox_obj.write(cursor, uid, mail_ids, {'folder': 'drafts'}, ctx)
         return mail_ids
-
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), at_front=True)
-    def save_to_mailbox_in_background_at_front(self, cursor, uid, context):
-        return self._save_to_mailbox_async(cursor, uid, context)
-
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'))
-    def save_to_mailbox_in_background(self, cursor, uid, context):
-        return self._save_to_mailbox_async(cursor, uid, context)
-
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True)
-    def save_to_mailbox_in_background_on_commit(self, cursor, uid, context):
-        return self._save_to_mailbox_async(cursor, uid, context)
-
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True, at_front=True)
-    def save_to_mailbox_in_background_at_front_on_commit(self, cursor, uid, context):
-        return self._save_to_mailbox_async(cursor, uid, context)
-
 
 PoweremailSendWizard()
