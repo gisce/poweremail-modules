@@ -57,10 +57,18 @@ class PoweremailSendWizard(osv.osv_memory):
         for rec_id in new_rec_ids:
             ctx['screen_vals'] = wiz
             ctx['src_rec_ids'] = rec_id
+            on_commit = ctx.pop('on_commit', False)
+
             if wiz['priority'] == '2':
-                job = self.save_to_mailbox_in_background_at_front(cursor, uid, ctx)
+                if on_commit:
+                    job = self.save_to_mailbox_in_background_at_front_on_commit(cursor, uid, ctx)
+                else:
+                    job = self.save_to_mailbox_in_background_at_front(cursor, uid, ctx)
             else:
-                job = self.save_to_mailbox_in_background(cursor, uid, ctx)
+                if on_commit:
+                    job = self.save_to_mailbox_in_background_on_commit(cursor, uid, ctx)
+                else:
+                    job = self.save_to_mailbox_in_background(cursor, uid, ctx)
             j_pool.add_job(job)
             if 'screen_vals' in ctx:
                 del ctx['screen_vals']
@@ -81,8 +89,10 @@ class PoweremailSendWizard(osv.osv_memory):
             mailbox_obj.write(cursor, uid, to_write, {'folder': 'outbox'}, ctx)
         return res
 
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), at_front=True)
-    def save_to_mailbox_in_background_at_front(self, cursor, uid, context):
+    def _save_to_mailbox_async(self, cursor, uid, context):
+        """
+            Method is not async by itself. Don't call it directly
+        """
         mailbox_obj = self.pool.get('poweremail.mailbox')
         if not context:
             context = {}
@@ -96,27 +106,25 @@ class PoweremailSendWizard(osv.osv_memory):
         mail_ids = super(PoweremailSendWizard,
                          self).save_to_mailbox(cursor, uid, [wiz_id], ctx)
         # When using `save_async`, we leave the folder as it should be
-        if not(context.get('save_async', False)):
+        if not (context.get('save_async', False)):
             mailbox_obj.write(cursor, uid, mail_ids, {'folder': 'drafts'}, ctx)
         return mail_ids
+
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), at_front=True)
+    def save_to_mailbox_in_background_at_front(self, cursor, uid, context):
+        return self._save_to_mailbox_async(cursor, uid, context)
 
     @job(queue=config.get('poweremail_render_queue', 'poweremail'))
     def save_to_mailbox_in_background(self, cursor, uid, context):
-        mailbox_obj = self.pool.get('poweremail.mailbox')
-        if not context:
-            context = {}
-        screen_vals = context.get('screen_vals', {})
-        ctx = context.copy()
-        del ctx['screen_vals']
-        if not screen_vals:
-            raise Exception("No screen_vals found in the context!")
+        return self._save_to_mailbox_async(cursor, uid, context)
 
-        wiz_id = self.create(cursor, uid, screen_vals, ctx)
-        mail_ids = super(PoweremailSendWizard,
-                         self).save_to_mailbox(cursor, uid, [wiz_id], ctx)
-        # When using `save_async`, we leave the folder as it should be
-        if not(context.get('save_async', False)):
-            mailbox_obj.write(cursor, uid, mail_ids, {'folder': 'drafts'}, ctx)
-        return mail_ids
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True)
+    def save_to_mailbox_in_background_on_commit(self, cursor, uid, context):
+        return self._save_to_mailbox_async(cursor, uid, context)
+
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True, at_front=True)
+    def save_to_mailbox_in_background_at_front_on_commit(self, cursor, uid, context):
+        return self._save_to_mailbox_async(cursor, uid, context)
+
 
 PoweremailSendWizard()
