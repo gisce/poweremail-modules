@@ -7,7 +7,7 @@
     "category": "GISCEMaster",
     "depends": [
         "poweremail",
-        "report_banner"
+        "report_banner_poweremail"
     ],
     "init_xml": [],
     "demo_xml": [],
