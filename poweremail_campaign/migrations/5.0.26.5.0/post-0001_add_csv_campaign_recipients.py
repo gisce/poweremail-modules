@@ -24,6 +24,13 @@ def up(cursor, installed_version):
             cursor, context={'module': 'poweremail_campaign'}
         )
 
+    logger.info('Setting default campaign mode for existing campaigns')
+    cursor.execute("""
+        UPDATE poweremail_campaign
+        SET campaign_mode = 'objects'
+        WHERE campaign_mode IS NULL
+    """)
+
     data_files = [
         'poweremail_campaign_view.xml',
         'poweremail_campaign_recipient_view.xml',
