@@ -185,7 +185,7 @@ class PoweremailCampaign(osv.osv):
                 if recipient['state'] not in ('valid', 'duplicate'):
                     continue
                 line_state = 'to_send'
-                if recipient['state'] == 'duplicate':
+                if recipient['state'] == 'duplicate' and campaign.distinct_mails:
                     line_state = 'avoid_duplicate'
                 line_id = line_obj.create(cursor, uid, {
                     'campaign_id': campaign.id,

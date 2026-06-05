@@ -474,6 +474,7 @@ class TestPoweremailCampaign(testing.OOTestCase):
                 'template_id': template_id,
                 'name': 'CSV campaign',
                 'campaign_mode': 'csv',
+                'distinct_mails': True,
                 'csv_file': self._b64(
                     'email;language\n'
                     'persona@example.com;en_US\n'
@@ -513,3 +514,36 @@ class TestPoweremailCampaign(testing.OOTestCase):
                 'poweremail.campaign.recipient,'
             ))
             self.assertEqual(lines[0]['lang'], 'en_US')
+
+    def test_import_csv_recipients_respects_distinct_mails_flag(self):
+        with Transaction().start(self.database) as txn:
+            uid = txn.user
+            cursor = txn.cursor
+
+            camp_obj = self.openerp.pool.get('poweremail.campaign')
+            line_obj = self.openerp.pool.get('poweremail.campaign.line')
+            template_id = self._create_csv_campaign_template(cursor, uid)
+            camp_id = camp_obj.create(cursor, uid, {
+                'template_id': template_id,
+                'name': 'CSV campaign without distinct mails',
+                'campaign_mode': 'csv',
+                'distinct_mails': False,
+                'csv_file': self._b64(
+                    'email;language\n'
+                    'persona@example.com;en_US\n'
+                    'persona@example.com;en_US\n'
+                ),
+            })
+
+            camp_obj.action_import_csv_recipients(cursor, uid, [camp_id])
+
+            line_ids = line_obj.search(
+                cursor, uid, [('campaign_id', '=', camp_id)],
+                order='id asc'
+            )
+            lines = line_obj.read(cursor, uid, line_ids, ['state'])
+
+            self.assertEqual(
+                [line['state'] for line in lines],
+                ['to_send', 'to_send']
+            )
