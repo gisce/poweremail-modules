@@ -402,6 +402,7 @@ class TestPoweremailCampaign(testing.OOTestCase):
                 'persona@example.com;en_US\n'
                 'bad-email;en_US\n'
                 'persona2@example.com;xx_XX\n'
+                'missing_language\n'
                 '\n'
             )
 
@@ -409,15 +410,36 @@ class TestPoweremailCampaign(testing.OOTestCase):
                 cursor, uid, camp_id, csv_data
             )
 
-            self.assertEqual(summary['total'], 4)
+            self.assertEqual(summary['total'], 5)
             self.assertEqual(summary['valid'], 1)
             self.assertEqual(summary['duplicate'], 1)
-            self.assertEqual(summary['invalid'], 2)
+            self.assertEqual(summary['invalid'], 3)
             self.assertEqual(summary['empty'], 1)
             self.assertEqual(
                 [recipient['state'] for recipient in recipients],
-                ['valid', 'duplicate', 'invalid', 'invalid']
+                ['valid', 'duplicate', 'invalid', 'invalid', 'invalid']
             )
+
+    def test_parse_csv_recipients_rejects_invalid_header(self):
+        with Transaction().start(self.database) as txn:
+            uid = txn.user
+            cursor = txn.cursor
+
+            camp_obj = self.openerp.pool.get('poweremail.campaign')
+            recipient_obj = self.openerp.pool.get('poweremail.campaign.recipient')
+            template_id = self._create_csv_campaign_template(cursor, uid)
+            camp_id = camp_obj.create(cursor, uid, {
+                'template_id': template_id,
+                'name': 'CSV campaign',
+                'campaign_mode': 'csv',
+            })
+            csv_data = self._b64(
+                'email;lang\n'
+                'persona@example.com;en_US\n'
+            )
+
+            with self.assertRaises(except_osv):
+                recipient_obj.parse_csv_data(cursor, uid, camp_id, csv_data)
 
     def test_csv_import_requires_csv_campaign_mode(self):
         with Transaction().start(self.database) as txn:
