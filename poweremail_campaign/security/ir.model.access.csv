@@ -5,6 +5,9 @@
 "access_poweremail_campaign_line_r","poweremail.campaign.line","model_poweremail_campaign_line","poweremail.res_groups_peuserse",1,0,0,0
 "access_poweremail_campaign_line_w","poweremail.campaign.line","model_poweremail_campaign_line","poweremail.res_groups_peusersi",1,1,1,0
 "access_poweremail_campaign_line_u","poweremail.campaign.line","model_poweremail_campaign_line","poweremail.res_groups_pemanager",1,1,1,1
+"access_poweremail_campaign_recipient_r","poweremail.campaign.recipient","model_poweremail_campaign_recipient","poweremail.res_groups_peuserse",1,0,0,0
+"access_poweremail_campaign_recipient_w","poweremail.campaign.recipient","model_poweremail_campaign_recipient","poweremail.res_groups_peusersi",1,1,1,0
+"access_poweremail_campaign_recipient_u","poweremail.campaign.recipient","model_poweremail_campaign_recipient","poweremail.res_groups_pemanager",1,1,1,1
 "access_wizard_poweremail_campaign_r","wizard.poweremail.campaign","model_wizard_poweremail_campaign","poweremail.res_groups_peuserse",1,0,0,0
 "access_wizard_poweremail_campaign_w","wizard.poweremail.campaign","model_wizard_poweremail_campaign","poweremail.res_groups_peusersi",1,1,1,0
 "access_wizard_poweremail_campaign_u","wizard.poweremail.campaign","model_wizard_poweremail_campaign","poweremail.res_groups_pemanager",1,1,1,1

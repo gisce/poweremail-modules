@@ -2,8 +2,10 @@
 from __future__ import absolute_import
 
 from osv import osv, fields
+from osv.osv import except_osv
 from poweremail.poweremail_template import get_value
 from tools import config
+from tools.translate import _
 
 
 class PoweremailCampaign(osv.osv):
@@ -68,7 +70,12 @@ class PoweremailCampaign(osv.osv):
         pm_camp_line_q = pm_camp_line_obj.q(cursor, uid)
         mails_unics = set()
         for camp_id in ids:
-            pm_camp_vs = pm_camp_q.read(['domain', 'template_id', 'distinct_mails']).where([('id', '=', camp_id)])[0]
+            pm_camp_vs = pm_camp_q.read(['domain', 'template_id', 'distinct_mails', 'campaign_mode']).where([('id', '=', camp_id)])[0]
+            if pm_camp_vs['campaign_mode'] == 'csv':
+                raise except_osv(
+                    _('Error'),
+                    _('CSV campaigns must create lines from the CSV import.')
+                )
             line_vs = pm_camp_line_q.read(['id']).where([('campaign_id', '=', camp_id)])
             # Borra línies existents de la campanya
             for line_v in line_vs:
@@ -112,6 +119,85 @@ class PoweremailCampaign(osv.osv):
                     pm_camp_line_obj.create(cursor, uid, params)
         return True
 
+    def _check_csv_template(self, cursor, uid, campaign, context=None):
+        if not campaign.template_id:
+            raise except_osv(_('Error'), _('A template is required.'))
+        model = str(campaign.template_id.model_int_name or '')
+        if model != 'poweremail.campaign.recipient':
+            raise except_osv(
+                _('Error'),
+                _('CSV campaigns require a template over poweremail.campaign.recipient.')
+            )
+
+    def action_preview_csv_import(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
+        if not isinstance(ids, list):
+            ids = [ids]
+        recipient_obj = self.pool.get('poweremail.campaign.recipient')
+        for campaign in self.browse(cursor, uid, ids, context=context):
+            self._check_csv_template(cursor, uid, campaign, context=context)
+            recipients, summary = recipient_obj.parse_csv_data(
+                cursor, uid, campaign.id, campaign.csv_file, context=context
+            )
+            self.write(cursor, uid, campaign.id, {
+                'csv_import_summary': recipient_obj.format_import_summary(summary)
+            }, context=context)
+        return True
+
+    def action_import_csv_recipients(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
+        if not isinstance(ids, list):
+            ids = [ids]
+        recipient_obj = self.pool.get('poweremail.campaign.recipient')
+        line_obj = self.pool.get('poweremail.campaign.line')
+        for campaign in self.browse(cursor, uid, ids, context=context):
+            self._check_csv_template(cursor, uid, campaign, context=context)
+            recipients, summary = recipient_obj.parse_csv_data(
+                cursor, uid, campaign.id, campaign.csv_file, context=context,
+                check_existing=False
+            )
+            old_line_ids = line_obj.search(
+                cursor, uid, [('campaign_id', '=', campaign.id)], context=context
+            )
+            if old_line_ids:
+                line_obj.unlink(cursor, uid, old_line_ids, context=context)
+            old_recipient_ids = recipient_obj.search(
+                cursor, uid, [('campaign_id', '=', campaign.id)], context=context
+            )
+            if old_recipient_ids:
+                recipient_obj.unlink(
+                    cursor, uid, old_recipient_ids, context=context
+                )
+
+            source_filename = campaign.csv_filename or ''
+            for recipient in recipients:
+                recipient['source_filename'] = source_filename
+                recipient_id = recipient_obj.create(
+                    cursor, uid, recipient, context=context
+                )
+                if recipient['state'] not in ('valid', 'duplicate'):
+                    continue
+                line_state = 'to_send'
+                if recipient['state'] == 'duplicate':
+                    line_state = 'avoid_duplicate'
+                line_id = line_obj.create(cursor, uid, {
+                    'campaign_id': campaign.id,
+                    'ref': 'poweremail.campaign.recipient,%s' % recipient_id,
+                    'state': line_state,
+                    'lang': recipient['language'] or config.get('lang', 'en_US'),
+                    'log': recipient['log'],
+                }, context=context)
+                recipient_obj.write(cursor, uid, recipient_id, {
+                    'campaign_line_id': line_id,
+                    'state': recipient['state'] == 'valid' and 'line_created' or 'duplicate',
+                }, context=context)
+            self.write(cursor, uid, campaign.id, {
+                'csv_import_summary': recipient_obj.format_import_summary(summary)
+            }, context=context)
+        return True
+
     def send_emails(self, cursor, uid, ids, context=None):
         if context is None:
             context = {}
@@ -141,7 +227,14 @@ class PoweremailCampaign(osv.osv):
     _columns = {
         'template_id': fields.many2one('poweremail.templates', 'Template E-mail', required=True),
         'name': fields.char('Name', size=64, required=True),
+        'campaign_mode': fields.selection([
+            ('objects', 'Objects / Domain'),
+            ('csv', 'CSV Recipients'),
+        ], 'Campaign Mode', required=True),
         'domain': fields.text('Filter Objects', size=256, required=True),
+        'csv_file': fields.binary('CSV File'),
+        'csv_filename': fields.char('CSV Filename', size=256),
+        'csv_import_summary': fields.text('CSV Import Summary', readonly=True),
         'progress_created': fields.function(_ff_created_sent_object, multi='barra_progres', string='Progress Created', type='float', method=True),
         'progress_sent': fields.function(_ff_created_sent_object, multi='barra_progres', string='Progress Sent', type='float', method=True),
         'create_date': fields.datetime('Create Date', readonly=1),
@@ -151,6 +244,7 @@ class PoweremailCampaign(osv.osv):
     }
 
     _defaults = {
+        'campaign_mode': lambda *a: 'objects',
         'domain': lambda *a: '[]',
         'distinct_mails': lambda *a: False,
     }

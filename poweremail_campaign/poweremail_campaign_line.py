@@ -164,7 +164,8 @@ class PoweremailCampaign(osv.osv):
     _inherit = 'poweremail.campaign'
 
     _columns = {
-        'reference_ids': fields.one2many('poweremail.campaign.line', 'campaign_id', 'Campaign Line')
+        'reference_ids': fields.one2many('poweremail.campaign.line', 'campaign_id', 'Campaign Line'),
+        'recipient_ids': fields.one2many('poweremail.campaign.recipient', 'campaign_id', 'CSV Recipients')
     }
 
 
