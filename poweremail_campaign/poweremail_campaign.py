@@ -120,6 +120,11 @@ class PoweremailCampaign(osv.osv):
         return True
 
     def _check_csv_template(self, cursor, uid, campaign, context=None):
+        if campaign.campaign_mode != 'csv':
+            raise except_osv(
+                _('Error'),
+                _('CSV import is only available in CSV campaign mode.')
+            )
         if not campaign.template_id:
             raise except_osv(_('Error'), _('A template is required.'))
         model = str(campaign.template_id.model_int_name or '')
