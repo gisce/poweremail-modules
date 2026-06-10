@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
+import base64
 import mock
 from destral.patch import PatchNewCursors
 
@@ -12,6 +13,28 @@ from destral import testing
 from destral.transaction import Transaction
 
 class TestPoweremailCampaign(testing.OOTestCase):
+    def _b64(self, content):
+        if not isinstance(content, bytes):
+            content = content.encode('utf-8')
+        content = base64.b64encode(content)
+        if hasattr(content, 'decode'):
+            content = content.decode('ascii')
+        return content
+
+    def _create_csv_campaign_template(self, cursor, uid):
+        model_obj = self.openerp.pool.get('ir.model')
+        template_obj = self.openerp.pool.get('poweremail.templates')
+        model_id = model_obj.search(
+            cursor, uid, [('model', '=', 'poweremail.campaign.recipient')]
+        )[0]
+        return template_obj.create(cursor, uid, {
+            'name': 'CSV recipients template',
+            'object_name': model_id,
+            'def_to': '${object.email}',
+            'lang': '${object.language}',
+            'template_language': 'mako',
+        })
+
     def test_ff_created(self):
         with Transaction().start(self.database) as txn:
             uid = txn.user
@@ -359,3 +382,168 @@ class TestPoweremailCampaign(testing.OOTestCase):
             # Comprovem que l’estat ha canviat correctament
             state = camp_line_obj.read(cursor, uid, line_id, ['state'])['state']
             self.assertEqual(state, 'sending_error')
+
+    def test_parse_csv_recipients_validates_rows(self):
+        with Transaction().start(self.database) as txn:
+            uid = txn.user
+            cursor = txn.cursor
+
+            camp_obj = self.openerp.pool.get('poweremail.campaign')
+            recipient_obj = self.openerp.pool.get('poweremail.campaign.recipient')
+            template_id = self._create_csv_campaign_template(cursor, uid)
+            camp_id = camp_obj.create(cursor, uid, {
+                'template_id': template_id,
+                'name': 'CSV campaign',
+                'campaign_mode': 'csv',
+            })
+            csv_data = self._b64(
+                'email;language\n'
+                'persona@example.com;en_US\n'
+                'persona@example.com;en_US\n'
+                'bad-email;en_US\n'
+                'persona2@example.com;xx_XX\n'
+                'missing_language\n'
+                '\n'
+            )
+
+            recipients, summary = recipient_obj.parse_csv_data(
+                cursor, uid, camp_id, csv_data
+            )
+
+            self.assertEqual(summary['total'], 5)
+            self.assertEqual(summary['valid'], 1)
+            self.assertEqual(summary['duplicate'], 1)
+            self.assertEqual(summary['invalid'], 3)
+            self.assertEqual(summary['empty'], 1)
+            self.assertEqual(
+                [recipient['state'] for recipient in recipients],
+                ['valid', 'duplicate', 'invalid', 'invalid', 'invalid']
+            )
+
+    def test_parse_csv_recipients_rejects_invalid_header(self):
+        with Transaction().start(self.database) as txn:
+            uid = txn.user
+            cursor = txn.cursor
+
+            camp_obj = self.openerp.pool.get('poweremail.campaign')
+            recipient_obj = self.openerp.pool.get('poweremail.campaign.recipient')
+            template_id = self._create_csv_campaign_template(cursor, uid)
+            camp_id = camp_obj.create(cursor, uid, {
+                'template_id': template_id,
+                'name': 'CSV campaign',
+                'campaign_mode': 'csv',
+            })
+            csv_data = self._b64(
+                'email;lang\n'
+                'persona@example.com;en_US\n'
+            )
+
+            with self.assertRaises(except_osv):
+                recipient_obj.parse_csv_data(cursor, uid, camp_id, csv_data)
+
+    def test_csv_import_requires_csv_campaign_mode(self):
+        with Transaction().start(self.database) as txn:
+            uid = txn.user
+            cursor = txn.cursor
+
+            camp_obj = self.openerp.pool.get('poweremail.campaign')
+            template_id = self._create_csv_campaign_template(cursor, uid)
+            camp_id = camp_obj.create(cursor, uid, {
+                'template_id': template_id,
+                'name': 'Objects campaign with CSV template',
+                'campaign_mode': 'objects',
+                'csv_file': self._b64(
+                    'email;language\n'
+                    'persona@example.com;en_US\n'
+                ),
+            })
+
+            with self.assertRaises(except_osv):
+                camp_obj.action_preview_csv_import(cursor, uid, [camp_id])
+
+    def test_import_csv_recipients_creates_dummy_refs_and_lines(self):
+        with Transaction().start(self.database) as txn:
+            uid = txn.user
+            cursor = txn.cursor
+
+            camp_obj = self.openerp.pool.get('poweremail.campaign')
+            line_obj = self.openerp.pool.get('poweremail.campaign.line')
+            recipient_obj = self.openerp.pool.get('poweremail.campaign.recipient')
+            template_id = self._create_csv_campaign_template(cursor, uid)
+            camp_id = camp_obj.create(cursor, uid, {
+                'template_id': template_id,
+                'name': 'CSV campaign',
+                'campaign_mode': 'csv',
+                'distinct_mails': True,
+                'csv_file': self._b64(
+                    'email;language\n'
+                    'persona@example.com;en_US\n'
+                    'persona@example.com;en_US\n'
+                    'bad-email;en_US\n'
+                    'persona2@example.com;xx_XX\n'
+                ),
+                'csv_filename': 'recipients.csv',
+            })
+
+            camp_obj.action_import_csv_recipients(cursor, uid, [camp_id])
+
+            recipient_ids = recipient_obj.search(
+                cursor, uid, [('campaign_id', '=', camp_id)],
+                order='csv_line_number asc'
+            )
+            line_ids = line_obj.search(
+                cursor, uid, [('campaign_id', '=', camp_id)],
+                order='id asc'
+            )
+            recipients = recipient_obj.read(
+                cursor, uid, recipient_ids,
+                ['state', 'campaign_line_id', 'source_filename']
+            )
+            lines = line_obj.read(cursor, uid, line_ids, ['ref', 'state', 'lang'])
+
+            self.assertEqual(len(recipient_ids), 4)
+            self.assertEqual(len(line_ids), 2)
+            self.assertEqual(
+                [recipient['state'] for recipient in recipients],
+                ['line_created', 'duplicate', 'invalid', 'invalid']
+            )
+            self.assertEqual(recipients[0]['source_filename'], 'recipients.csv')
+            self.assertEqual(lines[0]['state'], 'to_send')
+            self.assertEqual(lines[1]['state'], 'avoid_duplicate')
+            self.assertTrue(lines[0]['ref'].startswith(
+                'poweremail.campaign.recipient,'
+            ))
+            self.assertEqual(lines[0]['lang'], 'en_US')
+
+    def test_import_csv_recipients_respects_distinct_mails_flag(self):
+        with Transaction().start(self.database) as txn:
+            uid = txn.user
+            cursor = txn.cursor
+
+            camp_obj = self.openerp.pool.get('poweremail.campaign')
+            line_obj = self.openerp.pool.get('poweremail.campaign.line')
+            template_id = self._create_csv_campaign_template(cursor, uid)
+            camp_id = camp_obj.create(cursor, uid, {
+                'template_id': template_id,
+                'name': 'CSV campaign without distinct mails',
+                'campaign_mode': 'csv',
+                'distinct_mails': False,
+                'csv_file': self._b64(
+                    'email;language\n'
+                    'persona@example.com;en_US\n'
+                    'persona@example.com;en_US\n'
+                ),
+            })
+
+            camp_obj.action_import_csv_recipients(cursor, uid, [camp_id])
+
+            line_ids = line_obj.search(
+                cursor, uid, [('campaign_id', '=', camp_id)],
+                order='id asc'
+            )
+            lines = line_obj.read(cursor, uid, line_ids, ['state'])
+
+            self.assertEqual(
+                [line['state'] for line in lines],
+                ['to_send', 'to_send']
+            )

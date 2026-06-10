@@ -18,6 +18,7 @@
       "wizard/wizard_resend_mails_view.xml",
       "poweremail_campaign_view.xml",
       "poweremail_campaign_line_view.xml",
+      "poweremail_campaign_recipient_view.xml",
       "security/ir.model.access.csv",
   ],
   "active": False,

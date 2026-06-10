@@ -15,6 +15,16 @@ class WizardPoweremailCampaign(osv.osv_memory):
         nom = ""
         if pm_camp_brw.name:
             nom = pm_camp_brw.name
+        if pm_camp_brw.campaign_mode == 'csv':
+            return {
+                'name': 'Poweremail Campaign Recipients %s' % str(nom),
+                'view_type': 'form',
+                'view_mode': 'tree,form',
+                'res_model': 'poweremail.campaign.recipient',
+                'view_id': False,
+                'type': 'ir.actions.act_window',
+                'domain': "[('campaign_id', '=', %s)]" % active_id,
+            }
         model = pm_camp_brw.template_id.model_int_name
         pm_camp_lines_ids = []
         for line_brw in pm_camp_brw.reference_ids:
