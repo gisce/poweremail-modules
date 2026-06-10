@@ -26,7 +26,7 @@
                             </page>
                         </notebook>
                     </group>
-                    <button icon="gtk-ok" name="send_sms" string="Send SMS" type="object" colspan="2" />
+                    <button icon="gtk-ok" name="send_sms_button" string="Send SMS" type="object" colspan="2" />
                     <button icon="gtk-cancel" special="cancel" string="Discard SMS" colspan="2" />
                 </form>
             </field>
