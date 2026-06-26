@@ -2,4 +2,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .test_poweremail_references import *
+from .test_poweremail_references import TestPoweremailReferences
+
+__all__ = ['TestPoweremailReferences']
