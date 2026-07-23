@@ -77,6 +77,15 @@ class PoweremailTemplateReference(osv.osv):
                 template_brw.write({'ref_ir_value_access': False})
                 template_brw.ref_ir_value_access.unlink()
 
+    def _generate_mailbox_item_from_template(self, cursor, user, template, record_id, context=None):
+        mailbox_id = super(PoweremailTemplateReference, self)._generate_mailbox_item_from_template(
+            cursor, user, template, record_id, context=context
+        )
+        mail = self.pool.get('poweremail.mailbox').simple_browse(cursor, user, mailbox_id, context=context)
+        if not mail.reference:
+            mail.write({'reference': '%s,%d' % (template.object_name.model, record_id)}, context=context)
+
+        return mailbox_id
 
     _columns = {
         'ref_ir_act_window_access': fields.many2one(
