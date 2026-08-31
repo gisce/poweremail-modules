@@ -170,16 +170,17 @@ class PoweremailMailbox(osv.osv):
         """
         if context is None:
             context = {}
-        super(PoweremailMailbox, self).run_mail_scheduler(cursor, user, context)
+        result = super(PoweremailMailbox, self).run_mail_scheduler(cursor, user, context)
 
         try:
-            self.clear_errors_with_later_succcess_mails(cursor, user, context)
+            self.clear_errors_with_later_success_mails(cursor, user, context)
         except Exception as e:
             LOGGER.notifyChannel(
                 _("Power Email"),
                 netsvc.LOG_ERROR,
                 _("Error clearing obsolete PowerEmail error mails: %s") % str(e)
             )
+        return result
 
     _columns = {
         'reference': fields.reference('Source Object', selection=_get_models,
