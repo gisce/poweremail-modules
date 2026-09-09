@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import mock
+import pooler
 from destral import testing
 from destral.transaction import Transaction
 
@@ -54,6 +55,32 @@ class powersms_tests(testing.OOTestCase):
             self.assertEqual(sms["folder"], "error")
             self.assertEqual(sms["state"], "na")
             self.assertTrue("reconcile with the provider" in sms["history"])
+
+    def test__powersms_claim_sms_for_sending__skips_already_claimed_sms(self):
+        with Transaction().start(self.database) as txn:
+            cursor = txn.cursor
+            uid = txn.user
+            psb = self.openerp.pool.get("powersms.smsbox")
+            sms_id = self.imd_obj.get_object_reference(cursor, uid, "powersms", "sms_outbox_001")[1]
+
+            def set_sms_state(state):
+                db = pooler.get_db_only(cursor.dbname)
+                cr_tmp = db.cursor()
+                try:
+                    psb.write(cr_tmp, uid, [sms_id], {"state": state})
+                    cr_tmp.commit()
+                finally:
+                    cr_tmp.close()
+
+            set_sms_state("na")
+            try:
+                self.assertTrue(psb._claim_sms_for_sending(cursor, uid, sms_id))
+                self.assertFalse(psb._claim_sms_for_sending(cursor, uid, sms_id))
+
+                sms = psb.read(cursor, uid, sms_id, ["state"])
+                self.assertEqual(sms["state"], "sending")
+            finally:
+                set_sms_state("na")
 
     def test__powersms_historise__ok(self):
         """
