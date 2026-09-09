@@ -15,9 +15,8 @@ class powersms_tests(testing.OOTestCase):
     def test__dummyTest(self):
         self.assertTrue(True)
 
-    @mock.patch("sql_db.Cursor.commit")
     @mock.patch("powersms.powersms_smsbox.PowersmsSMSbox.async_send_this_sms")
-    def test__powersms_run_sms_scheduler__ok(self, mocked_send, mock_commit):
+    def test__powersms_run_sms_scheduler__ok(self, mocked_send):
         """
         Checks if run_sms_shceduler is calling async send sms function
         """
@@ -30,8 +29,31 @@ class powersms_tests(testing.OOTestCase):
 
             psb.run_sms_scheduler(cursor, uid, {})
 
-            mock_commit.assert_called_with()
             mocked_send.assert_called_with(cursor, uid, nsms_outbox_pre, {})
+
+            sms = psb.read(cursor, uid, nsms_outbox_pre, ["state"])
+            self.assertEqual(sms[0]["state"], "na")
+
+    def test__powersms_recover_stale_sending_sms__moves_to_error(self):
+        with Transaction().start(self.database) as txn:
+            cursor = txn.cursor
+            uid = txn.user
+            psb = self.openerp.pool.get("powersms.smsbox")
+            sms_id = self.imd_obj.get_object_reference(cursor, uid, "powersms", "sms_outbox_001")[1]
+
+            psb.write(cursor, uid, [sms_id], {"state": "sending"})
+            cursor.execute(
+                "UPDATE powersms_smsbox SET write_date = '2000-01-01 00:00:00' WHERE id = %s",
+                (sms_id,),
+            )
+
+            recovered_ids = psb.recover_stale_sending_sms(cursor, uid)
+            sms = psb.read(cursor, uid, sms_id, ["folder", "state", "history"])
+
+            self.assertEqual(recovered_ids, [sms_id])
+            self.assertEqual(sms["folder"], "error")
+            self.assertEqual(sms["state"], "na")
+            self.assertTrue("reconcile with the provider" in sms["history"])
 
     def test__powersms_historise__ok(self):
         """

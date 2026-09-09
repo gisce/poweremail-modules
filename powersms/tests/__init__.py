@@ -1,3 +1,4 @@
 from __future__ import absolute_import
-from . import powersms_tests
-from . import test_powersms_coding_validation
+
+from .powersms_tests import *
+from .test_powersms_coding_validation import *

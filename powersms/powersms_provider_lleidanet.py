@@ -26,6 +26,8 @@ class PowersmsProviderLleidaNet(osv.osv):
     def send_sms_lleida(
         self, cursor, uid, _id, account_id, from_name, numbers_to, body="", files=None, context=None
     ):
+        if context is None:
+            context = {}
         from lleida_net.sms import Client
 
         account_obj = self.pool.get("powersms.core_accounts")
@@ -37,7 +39,12 @@ class PowersmsProviderLleidaNet(osv.osv):
             "Authorization": "x-api-key {}".format(str(values["api_pass"])),
         }
         json_body = self._get_json_body(numbers_to, body, from_name, context)
-        response = c.API.post(resource="", json=json_body, headers=headers)
+        response = c.API.post(
+            resource="",
+            json=json_body,
+            headers=headers,
+            timeout=context.get("psms_http_timeout", 15),
+        )
         return response.result["code"] == 200 and response.result["status"] == "Success"
 
 
