@@ -43,7 +43,7 @@ class PowersmsProviderLleidaNet(osv.osv):
             resource="",
             json=json_body,
             headers=headers,
-            timeout=context.get("psms_http_timeout", 15),
+            timeout=int(context.get("psms_http_timeout", 15)),
         )
         return response.result["code"] == 200 and response.result["status"] == "Success"
 
