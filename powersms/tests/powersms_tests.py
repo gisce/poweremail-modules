@@ -18,7 +18,7 @@ class powersms_tests(testing.OOTestCase):
     @mock.patch("powersms.powersms_smsbox.PowersmsSMSbox.async_send_this_sms")
     def test__powersms_run_sms_scheduler__ok(self, mocked_send):
         """
-        Checks if run_sms_shceduler is calling async send sms function
+        Checks if run_sms_scheduler is calling async send sms function
         """
         with Transaction().start(self.database) as txn:
             cursor = txn.cursor
