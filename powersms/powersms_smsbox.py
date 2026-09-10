@@ -169,7 +169,7 @@ class PowersmsSMSbox(osv.osv):
         # The job claims each record immediately before sending it.  Keeping
         # this query free of a state update prevents a killed batch from
         # stranding every selected SMS in ``sending``.
-        filters = [("folder", "=", "outbox"), ("state", "!=", "sending")]
+        filters = [("folder", "=", "outbox"), ("state", "=", "na")]
         if "filters" in context.keys():
             for each_filter in context["filters"]:
                 filters.append(each_filter)
@@ -196,16 +196,40 @@ class PowersmsSMSbox(osv.osv):
             [("folder", "=", "outbox"), ("state", "=", "sending"), ("write_date", "<", stale_before)],
             context=context,
         )
+        recovered_ids = []
         for sms_id in stale_ids:
+            if self._mark_stale_sending_sms_as_error(cr, uid, sms_id, stale_before, context):
+                recovered_ids.append(sms_id)
+        return recovered_ids
+
+    def _mark_stale_sending_sms_as_error(self, cr, uid, sms_id, stale_before, context=None):
+        """Move an unchanged stale sending SMS to error in one transaction."""
+        db = pooler.get_db_only(cr.dbname)
+        cr_tmp = db.cursor()
+        try:
+            cr_tmp.execute(
+                "SELECT id FROM powersms_smsbox WHERE id = %s AND folder = 'outbox' "
+                "AND state = 'sending' AND write_date < %s FOR UPDATE",
+                (sms_id, stale_before),
+            )
+            if not cr_tmp.fetchone():
+                cr_tmp.rollback()
+                return False
             self.historise(
-                cr,
+                cr_tmp,
                 uid,
                 [sms_id],
                 "SMS sending timed out; reconcile with the provider before retrying",
                 context=context,
                 error=True,
             )
-        return stale_ids
+            cr_tmp.commit()
+            return True
+        except Exception:
+            cr_tmp.rollback()
+            raise
+        finally:
+            cr_tmp.close()
 
     def _claim_sms_for_sending(self, cr, uid, sms_id, context=None):
         """Claim one outbox SMS in its own transaction before sending it."""
@@ -214,7 +238,7 @@ class PowersmsSMSbox(osv.osv):
         try:
             cr_tmp.execute(
                 "SELECT id FROM powersms_smsbox "
-                "WHERE id = %s AND folder = 'outbox' AND state != 'sending' FOR UPDATE",
+                "WHERE id = %s AND folder = 'outbox' AND state = 'na' FOR UPDATE",
                 (sms_id,),
             )
             if not cr_tmp.fetchone():

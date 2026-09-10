@@ -42,11 +42,12 @@ class powersms_tests(testing.OOTestCase):
             psb = self.openerp.pool.get("powersms.smsbox")
             sms_id = self.imd_obj.get_object_reference(cursor, uid, "powersms", "sms_outbox_001")[1]
 
-            psb.write(cursor, uid, [sms_id], {"state": "sending"})
+            psb.write(cursor, uid, [sms_id], {"folder": "outbox", "state": "sending"})
             cursor.execute(
                 "UPDATE powersms_smsbox SET write_date = '2000-01-01 00:00:00' WHERE id = %s",
                 (sms_id,),
             )
+            cursor.commit()
 
             recovered_ids = psb.recover_stale_sending_sms(cursor, uid)
             sms = psb.read(cursor, uid, sms_id, ["folder", "state", "history"])
@@ -55,6 +56,31 @@ class powersms_tests(testing.OOTestCase):
             self.assertEqual(sms["folder"], "error")
             self.assertEqual(sms["state"], "na")
             self.assertTrue("reconcile with the provider" in sms["history"])
+            psb.write(cursor, uid, [sms_id], {"folder": "outbox", "state": "na"})
+            cursor.commit()
+
+    def test__powersms_mark_stale_sending_sms_as_error__skips_updated_sms(self):
+        with Transaction().start(self.database) as txn:
+            cursor = txn.cursor
+            uid = txn.user
+            psb = self.openerp.pool.get("powersms.smsbox")
+            sms_id = self.imd_obj.get_object_reference(cursor, uid, "powersms", "sms_outbox_001")[1]
+
+            psb.write(cursor, uid, [sms_id], {"folder": "outbox", "state": "na"})
+            cursor.execute(
+                "UPDATE powersms_smsbox SET write_date = '2000-01-01 00:00:00' WHERE id = %s",
+                (sms_id,),
+            )
+            cursor.commit()
+
+            self.assertFalse(
+                psb._mark_stale_sending_sms_as_error(
+                    cursor, uid, sms_id, "2001-01-01 00:00:00"
+                )
+            )
+            sms = psb.read(cursor, uid, sms_id, ["folder", "state"])
+            self.assertEqual(sms["folder"], "outbox")
+            self.assertEqual(sms["state"], "na")
 
     def test__powersms_claim_sms_for_sending__skips_already_claimed_sms(self):
         with Transaction().start(self.database) as txn:
@@ -67,7 +93,7 @@ class powersms_tests(testing.OOTestCase):
                 db = pooler.get_db_only(cursor.dbname)
                 cr_tmp = db.cursor()
                 try:
-                    psb.write(cr_tmp, uid, [sms_id], {"state": state})
+                    psb.write(cr_tmp, uid, [sms_id], {"folder": "outbox", "state": state})
                     cr_tmp.commit()
                 finally:
                     cr_tmp.close()
