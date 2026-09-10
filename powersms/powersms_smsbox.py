@@ -9,11 +9,15 @@ import time
 from tools.translate import _
 from tools.config import config
 import tools
-from oorq.decorators import job
+from oorq.decorators import split_job
 import six
 import json
 
 LOGGER = netsvc.Logger()
+
+SMS_BATCH_SIZE = 10
+SMS_HTTP_TIMEOUT = 15
+SMS_SENDING_STALE_TIMEOUT = 15 * 60
 
 
 class PowersmsSMSbox(osv.osv):
@@ -160,9 +164,12 @@ class PowersmsSMSbox(osv.osv):
             ids = []
         if context is None:
             context = {}
-        # 8888888888888 SENDS SMS IN OUTBOX 8888888888888888888#
-        # get ids of smss in outbox
-        filters = [("folder", "=", "outbox"), ("state", "!=", "sending")]
+        self.recover_stale_sending_sms(cr, uid, context=context)
+
+        # The job claims each record immediately before sending it.  Keeping
+        # this query free of a state update prevents a killed batch from
+        # stranding every selected SMS in ``sending``.
+        filters = [("folder", "=", "outbox"), ("state", "=", "na")]
         if "filters" in context.keys():
             for each_filter in context["filters"]:
                 filters.append(each_filter)
@@ -172,24 +179,81 @@ class PowersmsSMSbox(osv.osv):
         LOGGER.notifyChannel(
             "Power SMS", netsvc.LOG_INFO, "Sending All SMS (PID: %s)" % os.getpid()
         )
-        # To prevent resend the same sms in several send_all_sms() calls
-        # We put this in a new cursor/transaction to avoid concurrent
-        # transaction isolation problems
-        db = pooler.get_db_only(cr.dbname)
-        cr_tmp = db.cursor()
-        try:
-            self.write(cr_tmp, uid, ids, {"state": "sending"}, context)
-            cr_tmp.commit()
-        except Exception:
-            cr_tmp.rollback()
-        finally:
-            cr_tmp.close()
-        # send sms one by one
         if ids:
             self.async_send_this_sms(cr, uid, ids, context)
         return True
 
-    @job(queue="powersms", timeout=180)
+    def recover_stale_sending_sms(self, cr, uid, context=None):
+        if context is None:
+            context = {}
+        stale_timeout = int(config.get("psms_sending_stale_timeout", SMS_SENDING_STALE_TIMEOUT))
+        stale_before = time.strftime(
+            "%Y-%m-%d %H:%M:%S", time.localtime(time.time() - stale_timeout)
+        )
+        stale_ids = self.search(
+            cr,
+            uid,
+            [("folder", "=", "outbox"), ("state", "=", "sending"), ("write_date", "<", stale_before)],
+            context=context,
+        )
+        recovered_ids = []
+        for sms_id in stale_ids:
+            if self._mark_stale_sending_sms_as_error(cr, uid, sms_id, stale_before, context):
+                recovered_ids.append(sms_id)
+        return recovered_ids
+
+    def _mark_stale_sending_sms_as_error(self, cr, uid, sms_id, stale_before, context=None):
+        """Move an unchanged stale sending SMS to error in one transaction."""
+        db = pooler.get_db_only(cr.dbname)
+        cr_tmp = db.cursor()
+        try:
+            cr_tmp.execute(
+                "SELECT id FROM powersms_smsbox WHERE id = %s AND folder = 'outbox' "
+                "AND state = 'sending' AND write_date < %s FOR UPDATE",
+                (sms_id, stale_before),
+            )
+            if not cr_tmp.fetchone():
+                cr_tmp.rollback()
+                return False
+            self.historise(
+                cr_tmp,
+                uid,
+                [sms_id],
+                "SMS sending timed out; reconcile with the provider before retrying",
+                context=context,
+                error=True,
+            )
+            cr_tmp.commit()
+            return True
+        except Exception:
+            cr_tmp.rollback()
+            raise
+        finally:
+            cr_tmp.close()
+
+    def _claim_sms_for_sending(self, cr, uid, sms_id, context=None):
+        """Claim one outbox SMS in its own transaction before sending it."""
+        db = pooler.get_db_only(cr.dbname)
+        cr_tmp = db.cursor()
+        try:
+            cr_tmp.execute(
+                "SELECT id FROM powersms_smsbox "
+                "WHERE id = %s AND folder = 'outbox' AND state = 'na' FOR UPDATE",
+                (sms_id,),
+            )
+            if not cr_tmp.fetchone():
+                cr_tmp.rollback()
+                return False
+            self.write(cr_tmp, uid, [sms_id], {"state": "sending"}, context)
+            cr_tmp.commit()
+            return True
+        except Exception:
+            cr_tmp.rollback()
+            raise
+        finally:
+            cr_tmp.close()
+
+    @split_job(queue="powersms", timeout=180, chunk_size=SMS_BATCH_SIZE)
     def async_send_this_sms(self, cr, uid, ids=None, context=None):
         self.send_this_sms(cr, uid, ids, context)
 
@@ -218,8 +282,13 @@ class PowersmsSMSbox(osv.osv):
         core_obj = self.pool.get("powersms.core_accounts")
         for id in ids:
             try:
+                if not self._claim_sms_for_sending(cr, uid, id, context):
+                    continue
                 ctx = context.copy()
                 ctx["from_smsbox_id"] = id
+                ctx["psms_http_timeout"] = int(
+                    config.get("psms_http_timeout", SMS_HTTP_TIMEOUT)
+                )
                 values = self.read(
                     cr, uid, id, [], context
                 )  # Values will be a dictionary of all entries in the record ref by id

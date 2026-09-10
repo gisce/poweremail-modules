@@ -66,7 +66,7 @@ class TestProviders(testing.OOTestCase):
                         )
                     )
                 account_id = imd_obj.get_object_reference(
-                    cursor, uid, "powersms", "sms_account_som"
+                    cursor, uid, "powersms", "sms_account_001"
                 )[1]
                 lleidanet_prov_id = imd_obj.get_object_reference(
                     cursor, uid, "powersms", "powersms_provider_lleidanet"
