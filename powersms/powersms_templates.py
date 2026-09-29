@@ -10,6 +10,30 @@ class PowersmsTemplates(osv.osv):
     _name = "powersms.templates"
     _description = "Power SMS Templates for Models"
 
+    def generate_sms_sync(self, cursor, uid, template_id, record_id, context=None):
+        if context is None:
+            context = {}
+        if isinstance(record_id, list):
+            record_id = record_id[0]
+        template_obj = self.pool.get('powersms.templates')
+        template = template_obj.simple_browse(cursor, uid, template_id)
+        wiz_send_obj = self.pool.get('powersms.send.wizard')
+        params = {
+            'account': template.enforce_from_account.id,
+        }
+        create_empty_number = context.get('create_empty_number', False)
+        ctx = {
+            'active_ids': [record_id],
+            'active_id': record_id,
+            'template_id': template_id,
+            'src_model': template.object_name.model,
+            'src_rec_ids': [record_id],
+            'create_empty_number': create_empty_number,
+        }
+        wiz_id = wiz_send_obj.create(cursor, uid, params, context=ctx)
+        res = wiz_send_obj.inner_send_sms(cursor, uid, [wiz_id], context=ctx)
+        return res
+
     def _get_model_name(self, cursor, uid, template_ids, field_name, arg, context=None):
         res = {}
         pwm_templ_obj = self.pool.get("powersms.templates")
