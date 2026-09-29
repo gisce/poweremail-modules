@@ -189,7 +189,7 @@ class PowersmsSMSbox(osv.osv):
             self.async_send_this_sms(cr, uid, ids, context)
         return True
 
-    @job(queue="powersms", timeout=180)
+    @job(queue="powersms", timeout=6*60)
     def async_send_this_sms(self, cr, uid, ids=None, context=None):
         self.send_this_sms(cr, uid, ids, context)
 
