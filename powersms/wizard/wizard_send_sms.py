@@ -102,20 +102,32 @@ class PowersmsSendWizard(osv.osv_memory):
         if context is None:
             context = {}
         smsbox_obj = self.pool.get("powersms.smsbox")
+        sms_ids = self.save_to_smsbox(cursor, uid, ids, context)
+        if not sms_ids:
+            return False
+        self.do_send_sms(cursor, uid, ids, context=context)
+        sms_no_valids = smsbox_obj.search(cursor, uid, [
+            ('id', 'in', sms_ids),
+            ('folder', '=', "drafts")
+        ], context=context)
+        sent_succesfully = len(sms_no_valids) == 0
+        return sent_succesfully
+
+    def do_send_sms(self, cursor, uid, ids, context=None):
+        if context is None:
+            context = {}
+        smsbox_obj = self.pool.get("powersms.smsbox")
         folder = context.get("folder", "outbox")
         values = {"folder": folder}
         sms_ids = self.save_to_smsbox(cursor, uid, ids, context)
-        sent_succesfully = True
         if sms_ids:
             for sms_id in sms_ids:
                 if not smsbox_obj.is_valid(cursor, uid, sms_id):
                     values["folder"] = "drafts"
-                    sent_succesfully = False
                 else:
                     values["folder"] = folder
                 smsbox_obj.write(cursor, uid, [sms_id], values, context)
-
-        return sent_succesfully
+        return sms_ids
 
     def get_end_value(self, cr, uid, src_rec_id, value, template, context=None):
         if context is None:
@@ -216,6 +228,7 @@ class PowersmsSendWizard(osv.osv_memory):
                 "psms_body_text": get_end_value(rec_id, screen_vals["body_text"]),
                 "psms_account_id": screen_vals["account"],
                 "state": "na",
+                "template_id": template.id,
             }
 
             psms_to_list = list(set(psms_to))

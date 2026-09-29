@@ -30,7 +30,8 @@
                                 <field name="history" nolabel="1" colspan="4" height="400"/>
                                 <group colspan="2" col="2">
                                     <field name="reference"/>
-                                    <field name="meta"/>
+				    <field name="meta"/>
+				    <field name="template_id"/>
                                 </group>
                             </group>
                         </page>
