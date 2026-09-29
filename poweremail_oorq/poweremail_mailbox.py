@@ -8,7 +8,7 @@ class PoweremailMailbox(osv.osv):
     _name = "poweremail.mailbox"
     _inherit = 'poweremail.mailbox'
 
-    @job(queue=config.get('poweremail_sender_queue', 'poweremail', timeout=6*60))
+    @job(queue=config.get('poweremail_sender_queue', 'poweremail'), timeout=6*60)
     def send_in_background(self, cursor, uid, ids, context):
         return super(PoweremailMailbox,
                      self).send_this_mail(cursor, uid, ids, context)
