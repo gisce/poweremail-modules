@@ -339,6 +339,7 @@ class PowersmsSMSbox(osv.osv):
         "pem_attachments_ids": fields.many2many(
             "ir.attachment", "sms_attachments_rel", "sms_id", "att_id", "Attachments"
         ),
+        "template_id": fields.many2one('powersms.templates', 'Template', readonly=True),
     }
 
     _defaults = {
