@@ -4,7 +4,7 @@ from destral import testing
 from destral.transaction import Transaction
 
 
-class powersms_tests(testing.OOTestCase):
+class TestPowersms(testing.OOTestCase):
     def setUp(self):
         self.pool = self.openerp.pool
         self.imd_obj = self.pool.get("ir.model.data")
@@ -48,8 +48,39 @@ class powersms_tests(testing.OOTestCase):
             history = psb.read(cursor, uid, sms_id, ["history"])
             self.assertTrue(u"SMS sent successfully" in history["history"])
 
+    def test_generate_sms_sync(self):
+        """
+        Checks if sms is created with save_to_smsbox function
+        :return:
+        """
+        with Transaction().start(self.database) as txn:
+            cursor = txn.cursor
+            uid = txn.user
+            model = self.pool.get("powersms.templates")
+            temp_id = self.imd_obj.get_object_reference(
+                cursor, uid, "powersms", "sms_template_001"
+            )[1]
+            rpa_id = self.imd_obj.get_object_reference(
+                cursor, uid, "base", "res_partner_address_c2c_1"
+            )[1]
+            self.openerp.pool.get("res.partner.address").write(cursor, uid, rpa_id, {'phone': '685999999'})
 
-class powersms_send_wizard_tests(testing.OOTestCase):
+            sms_created_id = model.generate_sms_sync(cursor, uid, temp_id, rpa_id)
+
+            psb = self.openerp.pool.get("powersms.smsbox")
+
+            sms_id = psb.search(
+                cursor,
+                uid,
+                [
+                    ("id", "in", sms_created_id),
+                    ("folder", "=", "outbox"),
+                    ("template_id", "=", temp_id),
+                ],
+            )
+            self.assertTrue(sms_created_id[0] in sms_id)
+
+class TestPowersmsSendWizard(testing.OOTestCase):
     def setUp(self):
         self.pool = self.openerp.pool
         self.imd_obj = self.pool.get("ir.model.data")
@@ -102,6 +133,7 @@ class powersms_send_wizard_tests(testing.OOTestCase):
                     ("id", "=", sms_created_id),
                     ("psms_body_text", "=", "Test text"),
                     ("folder", "=", "outbox"),
+                    ("template_id", "=", temp_id),
                 ],
             )
             self.assertTrue(sms_created_id[0] in sms_id)
