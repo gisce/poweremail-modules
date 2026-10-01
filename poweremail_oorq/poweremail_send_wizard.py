@@ -81,7 +81,7 @@ class PoweremailSendWizard(osv.osv_memory):
             mailbox_obj.write(cursor, uid, to_write, {'folder': 'outbox'}, ctx)
         return res
 
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), at_front=True)
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), at_front=True, timeout=6*60)
     def save_to_mailbox_in_background_at_front(self, cursor, uid, context):
         mailbox_obj = self.pool.get('poweremail.mailbox')
         if not context:
@@ -100,7 +100,7 @@ class PoweremailSendWizard(osv.osv_memory):
             mailbox_obj.write(cursor, uid, mail_ids, {'folder': 'drafts'}, ctx)
         return mail_ids
 
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'))
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), timeout=6*60)
     def save_to_mailbox_in_background(self, cursor, uid, context):
         mailbox_obj = self.pool.get('poweremail.mailbox')
         if not context:

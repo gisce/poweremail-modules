@@ -7,13 +7,13 @@ class PoweremailTemplates(osv.osv):
     _name = 'poweremail.templates'
     _inherit = 'poweremail.templates'
 
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True, at_front=True)
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True, at_front=True, timeout=6*60)
     def generate_mail_in_background_at_front(self, cursor, uid, template_id, ids, context=None):
         return super(PoweremailTemplates, self).generate_mail(
             cursor, uid, template_id, ids, context
         )
 
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True)
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True, timeout=6*60)
     def generate_mail_in_background(self, cursor, uid, template_id, ids, context=None):
         return super(PoweremailTemplates, self).generate_mail(
             cursor, uid, template_id, ids, context
