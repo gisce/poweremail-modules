@@ -82,14 +82,14 @@ class PowersmsProviderLleidaNet(osv.osv):
     def _result(self, accepted=False, code=None, message=None, retryable=False, raw=None):
         return {
             "accepted": accepted,
-            "code": code,
-            "message": message,
+            "provider_code": code,
+            "provider_message": message,
             "external_id": (raw or {}).get("id") or (raw or {}).get("message_id"),
             "retryable": retryable,
-            "raw": raw,
+            "raw_response": raw,
         }
 
-    def send_sms_lleida_detailed(
+    def send_sms_detailed_lleida(
         self, cursor, uid, _id, account_id, from_name, numbers_to, body="", files=None, context=None
     ):
         account_obj = self.pool.get("powersms.core_accounts")
@@ -132,17 +132,10 @@ class PowersmsProviderLleidaNet(osv.osv):
     def send_sms_lleida(
         self, cursor, uid, _id, account_id, from_name, numbers_to, body="", files=None, context=None
     ):
-        result = self.send_sms_lleida_detailed(
+        result = self.send_sms_detailed_lleida(
             cursor, uid, _id, account_id, from_name, numbers_to, body, files, context=context
         )
         return result["accepted"]
-
-    def send_sms_detailed(
-        self, cursor, uid, _id, account_id, from_name, numbers_to, body="", files=None, context=None
-    ):
-        return self.send_sms_lleida_detailed(
-            cursor, uid, _id, account_id, from_name, numbers_to, body, files, context=context
-        )
 
 
 PowersmsProviderLleidaNet()

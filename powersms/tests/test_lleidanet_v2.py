@@ -52,7 +52,7 @@ class TestLleidaNetV2(testing.OOTestCaseWithCursor):
         with mock.patch.object(self.provider.pool, "get", return_value=self._account()), mock.patch(
             "powersms.powersms_provider_lleidanet.urlopen", return_value=response
         ) as mocked_open:
-            result = self.provider.send_sms_lleida_detailed(
+            result = self.provider.send_sms_detailed_lleida(
                 self.cursor, self.uid, 1, 2, "GISCE", "+34666666666", "legacy text"
             )
         request = mocked_open.call_args[0][0]
@@ -71,15 +71,22 @@ class TestLleidaNetV2(testing.OOTestCaseWithCursor):
         with mock.patch.object(self.provider.pool, "get", return_value=self._account()), mock.patch(
             "powersms.powersms_provider_lleidanet.urlopen", return_value=response
         ):
-            result = self.provider.send_sms_lleida_detailed(
+            result = self.provider.send_sms_detailed_lleida(
                 self.cursor, self.uid, 1, 2, "GISCE", "+34666666666", "text"
             )
-        self.assertEqual((result["code"], result["message"], result["retryable"]), (1504, "Temporary", True))
+        self.assertEqual(
+            (
+                result["provider_code"],
+                result["provider_message"],
+                result["retryable"],
+            ),
+            (1504, "Temporary", True),
+        )
 
         with mock.patch.object(self.provider.pool, "get", return_value=self._account()), mock.patch(
             "powersms.powersms_provider_lleidanet.urlopen", side_effect=socket.timeout("timed out")
         ):
-            result = self.provider.send_sms_lleida_detailed(
+            result = self.provider.send_sms_detailed_lleida(
                 self.cursor, self.uid, 1, 2, "GISCE", "+34666666666", "text"
             )
         self.assertFalse(result["accepted"])
