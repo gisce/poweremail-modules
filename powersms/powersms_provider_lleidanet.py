@@ -2,17 +2,13 @@
 from __future__ import absolute_import, unicode_literals
 
 import base64
-import json
-import socket
 
+from lleida_net.sms import Client
 from osv import osv
 
 try:
-    from urllib.error import HTTPError, URLError
     from urllib.parse import urlparse
-    from urllib.request import Request, urlopen
 except ImportError:  # pragma: no cover - Python 2
-    from urllib2 import HTTPError, Request, URLError, urlopen
     from urlparse import urlparse
 
 
@@ -98,28 +94,39 @@ class PowersmsProviderLleidaNet(osv.osv):
         )
         endpoint = self._get_endpoint(values.get("api_server"))
         payload = self._get_json_body(
-            numbers_to, body, from_name, user=values.get("api_uname"), context=context
+            numbers_to, body, from_name,
+            user=str(values.get("api_uname") or ""), context=context
         )
-        headers = {
-            "Content-Type": "application/json; charset=utf-8",
-            "Accept": "application/json",
-            "Authorization": "x-api-key {}".format(values.get("api_pass") or ""),
-        }
-        request = Request(endpoint, data=json.dumps(payload).encode("utf-8"), headers=headers)
-        try:
-            response = urlopen(request, timeout=DEFAULT_TIMEOUT)
-            raw_body = response.read().decode("utf-8")
-        except HTTPError as error:
-            return self._result(code=error.code, message="Lleida.net HTTP error")
-        except (URLError, socket.timeout) as error:
-            return self._result(message=str(error), retryable=True)
-        try:
-            result = json.loads(raw_body)
-        except (TypeError, ValueError):
-            return self._result(message="Invalid JSON response from Lleida.net")
+        api_user = str(values.get("api_uname") or "")
+        api_key = str(values.get("api_pass") or "")
+        client = Client(
+            user=api_user,
+            password=api_key,
+            api_key=api_key,
+            api_url=endpoint,
+            timeout=DEFAULT_TIMEOUT,
+            preserve_error_response=True,
+            capture_transport_errors=True,
+        )
+        response = client.API.post(
+            resource="",
+            json=payload,
+            headers={"Content-Type": "application/json; charset=utf-8"},
+        )
+        transport_error = getattr(response, "transport_error", None)
+        if transport_error:
+            return self._result(
+                code=response.code,
+                message=response.message,
+                retryable=transport_error in ("timeout", "request"),
+            )
+        result = response.result or {}
         code = result.get("code")
         status = result.get("status")
-        message = result.get("message") or result.get("error") or status
+        message = (
+            result.get("message") or result.get("error") or status
+            or getattr(response, "message", None)
+        )
         accepted = code == 200 and status == "Success"
         return self._result(
             accepted=accepted,

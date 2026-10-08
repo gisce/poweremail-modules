@@ -3,7 +3,6 @@ from __future__ import absolute_import, unicode_literals
 
 import base64
 import json
-import socket
 
 import mock
 from destral import testing
@@ -47,29 +46,41 @@ class TestLleidaNetV2(testing.OOTestCaseWithCursor):
         return account_obj
 
     def test_legacy_configuration_uses_v2_without_password_in_payload(self):
-        response = mock.Mock()
-        response.read.return_value = b'{"code": 200, "status": "Success", "id": "abc"}'
+        response = mock.Mock(
+            error=False,
+            result={"code": 200, "status": "Success", "id": "abc"},
+            transport_error=None,
+        )
+        client = mock.Mock()
+        client.API.post.return_value = response
         with mock.patch.object(self.provider.pool, "get", return_value=self._account()), mock.patch(
-            "powersms.powersms_provider_lleidanet.urlopen", return_value=response
-        ) as mocked_open:
+            "powersms.powersms_provider_lleidanet.Client", return_value=client
+        ) as mocked_client:
             result = self.provider.send_sms_detailed_lleida(
                 self.cursor, self.uid, 1, 2, "GISCE", "+34666666666", "legacy text"
             )
-        request = mocked_open.call_args[0][0]
-        sent = json.loads(request.data.decode("utf-8"))
-        self.assertEqual(request.get_full_url(), "https://api.lleida.net/sms/v2/")
-        self.assertEqual(request.get_header("Authorization"), "x-api-key secret-key")
-        self.assertEqual(mocked_open.call_args[1]["timeout"], 15)
+        client_args = mocked_client.call_args[1]
+        sent = client.API.post.call_args[1]["json"]
+        self.assertEqual(client_args["api_url"], "https://api.lleida.net/sms/v2/")
+        self.assertEqual(client_args["api_key"], "secret-key")
+        self.assertEqual(client_args["timeout"], 15)
+        self.assertTrue(client_args["preserve_error_response"])
+        self.assertTrue(client_args["capture_transport_errors"])
         self.assertEqual(sent["sms"]["user"], "legacy-user")
         self.assertNotIn("password", sent["sms"])
         self.assertTrue(result["accepted"])
         self.assertEqual(result["external_id"], "abc")
 
     def test_functional_and_transport_errors_are_preserved(self):
-        response = mock.Mock()
-        response.read.return_value = b'{"code": 1504, "status": "Error", "message": "Temporary"}'
+        response = mock.Mock(
+            error=True,
+            result={"code": 1504, "status": "Error", "message": "Temporary"},
+            transport_error=None,
+        )
+        client = mock.Mock()
+        client.API.post.return_value = response
         with mock.patch.object(self.provider.pool, "get", return_value=self._account()), mock.patch(
-            "powersms.powersms_provider_lleidanet.urlopen", return_value=response
+            "powersms.powersms_provider_lleidanet.Client", return_value=client
         ):
             result = self.provider.send_sms_detailed_lleida(
                 self.cursor, self.uid, 1, 2, "GISCE", "+34666666666", "text"
@@ -83,8 +94,16 @@ class TestLleidaNetV2(testing.OOTestCaseWithCursor):
             (1504, "Temporary", True),
         )
 
+        timeout_response = mock.Mock(
+            error=True,
+            result={},
+            code=None,
+            message="timed out",
+            transport_error="timeout",
+        )
+        client.API.post.return_value = timeout_response
         with mock.patch.object(self.provider.pool, "get", return_value=self._account()), mock.patch(
-            "powersms.powersms_provider_lleidanet.urlopen", side_effect=socket.timeout("timed out")
+            "powersms.powersms_provider_lleidanet.Client", return_value=client
         ):
             result = self.provider.send_sms_detailed_lleida(
                 self.cursor, self.uid, 1, 2, "GISCE", "+34666666666", "text"
