@@ -5,6 +5,16 @@ from destral.transaction import Transaction
 
 
 class TestProviders(testing.OOTestCase):
+    def test_normalize_legacy_provider_results(self):
+        with Transaction().start(self.database) as txn:
+            provider_obj = txn.pool.get("powersms.provider")
+            accepted = provider_obj.normalize_sms_result(True)
+            rejected = provider_obj.normalize_sms_result(False)
+
+            self.assertTrue(accepted["accepted"])
+            self.assertFalse(rejected["accepted"])
+            self.assertFalse(accepted["retryable"])
+
     def test_provider_code_implementation(self):
         with Transaction().start(self.database) as txn:
             cursor, uid, pool = txn.cursor, txn.user, txn.pool

@@ -36,6 +36,28 @@ class PowersmsProvider(osv.osv):
             cursor, uid, _id, account_id, from_name, numbers_to, body, files, context=context
         )
 
+    def normalize_sms_result(self, result):
+        """Return the additive provider-result contract without changing legacy calls."""
+        if isinstance(result, dict) and "accepted" in result:
+            return result
+        return {
+            "accepted": result is True,
+            "code": None,
+            "message": None,
+            "external_id": None,
+            "retryable": False,
+            "raw": None,
+        }
+
+    def send_sms_detailed(
+        self, cursor, uid, _id, account_id, from_name, numbers_to, body="", files=None, context=None
+    ):
+        """Optional detailed API; legacy providers transparently keep working."""
+        result = self.send_sms(
+            cursor, uid, _id, account_id, from_name, numbers_to, body, files, context=context
+        )
+        return self.normalize_sms_result(result)
+
     _columns = {
         "name": fields.char("Provider", size=64, required=True),
         "function_pattern_code": fields.char(

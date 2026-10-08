@@ -80,6 +80,27 @@ class PowersmsCoreAccounts(osv.osv):
                 )
                 return error
 
+    def send_sms_detailed(
+        self, cr, uid, ids, from_name, numbers_to, body="", payload=None, context=None
+    ):
+        """Additive detailed API while preserving ``send_sms`` and its return type."""
+        if context is None:
+            context = {}
+        if payload is None:
+            payload = {}
+        if not self.check_numbers(cr, uid, ids, numbers_to):
+            raise Exception("Incorrect cell number: " + numbers_to)
+        for account_id in ids:
+            account = self.browse(cr, uid, account_id, context)
+            return account.provider_id.send_sms_detailed(
+                account_id,
+                from_name,
+                numbers_to,
+                body=body,
+                files=[],
+                context=context,
+            )
+
     def do_approval(self, cr, uid, ids, context={}):
         self.write(cr, uid, ids, {"state": "approved"}, context=context)
 
