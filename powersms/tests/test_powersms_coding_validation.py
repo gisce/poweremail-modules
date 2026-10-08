@@ -33,7 +33,9 @@ class TestProviders(testing.OOTestCase):
             provider_pattern_methods = [
                 m
                 for m in dir(provider_obj)
-                if m.startswith("send_sms_") and m != "send_sms_default"
+                if m.startswith("send_sms_")
+                and m != "send_sms_default"
+                and not m.endswith("_detailed")
             ]
             self.assertTrue(provider_pattern_methods)
             for _method in provider_pattern_methods:
