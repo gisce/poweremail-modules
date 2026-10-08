@@ -145,3 +145,49 @@ class TestProviderDetailedContract(testing.OOTestCaseWithCursor):
             None,
             context=None,
         )
+
+    def test_account_exposes_detailed_provider_result(self):
+        model_data_obj = self.pool.get("ir.model.data")
+        account_id = model_data_obj.get_object_reference(
+            self.cursor, self.uid, "powersms", "sms_account_001"
+        )[1]
+        account_obj = self.pool.get("powersms.core_accounts")
+        account_obj.write(
+            self.cursor,
+            self.uid,
+            [account_id],
+            {"provider_id": self.provider_id},
+        )
+        detailed_result = {
+            "accepted": True,
+            "provider_code": "queued",
+            "provider_message": "Accepted",
+            "external_id": "sms-126",
+            "retryable": False,
+            "raw_response": "",
+        }
+
+        with mock.patch.object(
+            self.provider_obj, "send_sms_detailed", return_value=detailed_result
+        ) as detailed_send:
+            result = account_obj.send_sms_detailed(
+                self.cursor,
+                self.uid,
+                [account_id],
+                "GISCE",
+                "600000000",
+                body="test",
+            )
+
+        self.assertEqual(result, detailed_result)
+        detailed_send.assert_called_once_with(
+            self.cursor,
+            self.uid,
+            self.provider_id,
+            account_id,
+            "GISCE",
+            "600000000",
+            body="test",
+            files=[],
+            context={},
+        )
