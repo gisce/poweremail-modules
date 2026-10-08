@@ -91,3 +91,20 @@ class TestLleidaNetV2(testing.OOTestCaseWithCursor):
             )
         self.assertFalse(result["accepted"])
         self.assertTrue(result["retryable"])
+
+    def test_legacy_boolean_matches_detailed_result(self):
+        detailed = {
+            "accepted": True,
+            "provider_code": 200,
+            "provider_message": "Success",
+            "external_id": "abc",
+            "retryable": False,
+            "raw_response": None,
+        }
+        with mock.patch.object(
+            self.provider, "send_sms_detailed_lleida", return_value=detailed
+        ):
+            result = self.provider.send_sms_lleida(
+                self.cursor, self.uid, 1, 2, "GISCE", "+34666666666", "legacy text"
+            )
+        self.assertIs(result, detailed["accepted"])
