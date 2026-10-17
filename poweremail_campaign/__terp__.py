@@ -9,6 +9,9 @@
       "poweremail",
       "poweremail_references",
   ],
+  "test_depends": [
+      "demo_lang"
+  ],
   "init_xml": [],
   "demo_xml": [
     "poweremail_campaign_demo.xml",
