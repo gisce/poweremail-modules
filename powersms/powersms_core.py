@@ -17,27 +17,26 @@ class PowersmsCoreAccounts(osv.osv):
             return True
         return False
 
+    def _payload_parser(self, payload):
+        from base64 import b64decode
+        import os
+        import tempfile
+
+        file_paths = []
+        for file_name in payload.keys():
+            extension = ".{}".format(file_name.split(".")[-1])
+            f_name = file_name.replace(extension, "")
+            fd, path = tempfile.mkstemp(prefix=f_name, suffix=extension)
+            os.write(fd, b64decode(payload[file_name]))
+            os.close(fd)
+            file_paths.append(path)
+        return file_paths
+
     def send_sms(self, cr, uid, ids, from_name, numbers_to, body="", payload=None, context=None):
         if context is None:
             context = {}
         if payload is None:
             payload = {}
-
-        def payload_parser(_payload):
-            from base64 import b64decode
-            import tempfile
-            import os
-
-            file_paths = []
-            for file_name in _payload.keys():
-                # Decode b64 from raw base64 attachment and write it to a buffer
-                extension = ".{}".format(file_name.split(".")[-1])
-                f_name = file_name.replace(extension, "")
-                fd, path = tempfile.mkstemp(prefix=f_name, suffix=extension)
-                os.write(fd, b64decode(_payload[file_name]))
-                os.close(fd)
-                file_paths.append(path)
-            return file_paths
 
         logger = netsvc.Logger()
 
@@ -64,7 +63,7 @@ class PowersmsCoreAccounts(osv.osv):
                         from_name,
                         numbers_to,
                         body=body,
-                        files=payload_parser(payload),
+                        files=self._payload_parser(payload),
                         context=context,
                     )
                 )
@@ -79,6 +78,31 @@ class PowersmsCoreAccounts(osv.osv):
                     ).format(**locals()),
                 )
                 return error
+
+    def send_sms_detailed(
+        self, cr, uid, ids, from_name, numbers_to, body="", payload=None, context=None
+    ):
+        """Expose the optional detailed contract from an SMS account."""
+        if context is None:
+            context = {}
+        if payload is None:
+            payload = {}
+        if not self.check_numbers(cr, uid, ids, numbers_to):
+            raise Exception("Incorrect cell number: " + numbers_to)
+        provider_obj = self.pool.get("powersms.provider")
+        for account_id in ids:
+            account = self.browse(cr, uid, account_id, context)
+            return provider_obj.send_sms_detailed(
+                cr,
+                uid,
+                account.provider_id.id,
+                account_id,
+                from_name,
+                numbers_to,
+                body=body,
+                files=self._payload_parser(payload),
+                context=context,
+            )
 
     def do_approval(self, cr, uid, ids, context={}):
         self.write(cr, uid, ids, {"state": "approved"}, context=context)
