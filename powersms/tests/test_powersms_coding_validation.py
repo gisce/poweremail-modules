@@ -26,6 +26,7 @@ class TestProviders(testing.OOTestCase):
                 for method in dir(provider_obj)
                 if method.startswith("send_sms_")
                 and method not in ("send_sms_default", "send_sms_detailed")
+                and not method.startswith("send_sms_detailed_")
             ]
             self.assertTrue(provider_pattern_methods)
             for method in provider_pattern_methods:
@@ -84,7 +85,9 @@ class TestProviderDetailedContract(testing.OOTestCaseWithCursor):
         )
 
     def test_falls_back_to_legacy_provider(self):
-        with mock.patch.object(self.provider_obj, "send_sms", return_value=True) as legacy_send:
+        with mock.patch.object(
+            self.provider_obj, "send_sms_detailed_lleida", None, create=True
+        ), mock.patch.object(self.provider_obj, "send_sms", return_value=True) as legacy_send:
             result = self.provider_obj.send_sms_detailed(
                 self.cursor,
                 self.uid,
