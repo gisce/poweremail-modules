@@ -31,6 +31,7 @@ ctx.update(env)
 body_html = get_value(cursor, uid, object.id, message=banners['generic_email_template_body'], template=template, context=ctx)
 preheader_html = get_value(cursor, uid, object.id, message=banners['generic_email_template_preheader'], template=template, context=ctx)
 footer_html = get_value(cursor, uid, object.id, message=banners['generic_email_template_footer'], template=template, context=ctx)
+header_html = get_value(cursor, uid, object.id, message=banners['generic_email_template_header'], template=template, context=ctx)
 %>
 <html>
   <head>
@@ -46,7 +47,7 @@ footer_html = get_value(cursor, uid, object.id, message=banners['generic_email_t
       <tr>
         <td>&nbsp;</td>
         <td class="container">
-          <div class="header">${banners['generic_email_template_header']}</div>
+          <div class="header">${header_html}</div>
           <div class="content">
 
             <!-- START CENTERED WHITE CONTAINER -->
