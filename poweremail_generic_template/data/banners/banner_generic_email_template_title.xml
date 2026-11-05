@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
-    <data>
+    <data noupdate="1">
         <record model="report.banner" id="banner_generic_email_template_title">
             <field name="name">Email genérico (TEMPLATE): título (title)</field>
             <field name="code">generic_email_template_title</field>

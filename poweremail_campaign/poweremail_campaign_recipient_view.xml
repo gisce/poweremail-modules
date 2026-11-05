@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="poweremail_campaign_recipient_form">
+            <field name="name">poweremail.campaign.recipient.form</field>
+            <field name="model">poweremail.campaign.recipient</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Power Email Campaign Recipient">
+                    <group colspan="8" col="8">
+                        <field name="campaign_id" colspan="2"/>
+                        <field name="campaign_line_id" colspan="2"/>
+                        <field name="email" colspan="2"/>
+                        <field name="language" colspan="2"/>
+                        <field name="csv_line_number" colspan="2"/>
+                        <field name="state" colspan="2"/>
+                        <field name="source_filename" colspan="2"/>
+                        <field name="log" colspan="4"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_campaign_recipient_tree">
+            <field name="name">poweremail.campaign.recipient.tree</field>
+            <field name="model">poweremail.campaign.recipient</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Power Email Campaign Recipients">
+                    <field name="campaign_id" select="1"/>
+                    <field name="csv_line_number" select="1"/>
+                    <field name="email" select="1"/>
+                    <field name="language" select="1"/>
+                    <field name="state" select="1"/>
+                    <field name="campaign_line_id"/>
+                    <field name="log"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_poweremail_campaign_recipient_view">
+            <field name="name">Power Email Campaign Recipients</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">poweremail.campaign.recipient</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</openerp>

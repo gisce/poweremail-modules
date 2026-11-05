@@ -189,7 +189,7 @@ class PowersmsSMSbox(osv.osv):
             self.async_send_this_sms(cr, uid, ids, context)
         return True
 
-    @job(queue="powersms", timeout=180)
+    @job(queue="powersms", timeout=6*60)
     def async_send_this_sms(self, cr, uid, ids=None, context=None):
         self.send_this_sms(cr, uid, ids, context)
 
@@ -339,6 +339,7 @@ class PowersmsSMSbox(osv.osv):
         "pem_attachments_ids": fields.many2many(
             "ir.attachment", "sms_attachments_rel", "sms_id", "att_id", "Attachments"
         ),
+        "template_id": fields.many2one('powersms.templates', 'Template', readonly=True),
     }
 
     _defaults = {

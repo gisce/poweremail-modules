@@ -100,19 +100,19 @@ class PoweremailSendWizard(osv.osv_memory):
                 job = self.save_to_mailbox_in_background(cursor, uid, context)
         return job
 
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), at_front=True)
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), at_front=True, timeout=6*60)
     def save_to_mailbox_in_background_at_front(self, cursor, uid, context):
         return self._save_to_mailbox_async_base(cursor, uid, context)
 
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'))
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), timeout=6*60)
     def save_to_mailbox_in_background(self, cursor, uid, context):
         return self._save_to_mailbox_async_base(cursor, uid, context)
 
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True)
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True, timeout=6*60)
     def save_to_mailbox_in_background_on_commit(self, cursor, uid, context):
         return self._save_to_mailbox_async_base(cursor, uid, context)
 
-    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True, at_front=True)
+    @job(queue=config.get('poweremail_render_queue', 'poweremail'), on_commit=True, at_front=True, timeout=6*60)
     def save_to_mailbox_in_background_at_front_on_commit(self, cursor, uid, context):
         return self._save_to_mailbox_async_base(cursor, uid, context)
 

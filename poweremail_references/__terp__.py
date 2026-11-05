@@ -12,7 +12,8 @@
     "demo_xml": [],
     "update_xml":[
         "poweremail_template_view.xml",
-        "poweremail_mailbox_view.xml"
+        "poweremail_mailbox_view.xml",
+        "res_config.xml",
     ],
     "active": False,
     "installable": True
