@@ -15,5 +15,101 @@
             	</field>
             </field>
     	</record>
+
+        <record model="ir.ui.view" id="poweremail_reference_all_emails_tree">
+            <field name="name">poweremail.mailbox.reference.allemailstree</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_all_emails_tree"/>
+            <field name="arch" type="xml">
+                <field name="create_date" position="after">
+                    <field name="reference"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_reference_inbox_tree">
+            <field name="name">poweremail.mailbox.reference.inboxtree</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_inbox_tree"/>
+            <field name="arch" type="xml">
+                <field name="create_date" position="after">
+                    <field name="reference"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_reference_drafts_tree">
+            <field name="name">poweremail.mailbox.reference.draftstree</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_drafts_tree"/>
+            <field name="arch" type="xml">
+                <field name="create_date" position="after">
+                    <field name="reference"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_reference_outbox_tree">
+            <field name="name">poweremail.mailbox.reference.outboxtree</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_outbox_tree"/>
+            <field name="arch" type="xml">
+                <field name="create_date" position="after">
+                    <field name="reference"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_reference_sentbox_tree">
+            <field name="name">poweremail.mailbox.reference.sentboxtree</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_sentbox_tree"/>
+            <field name="arch" type="xml">
+                <field name="create_date" position="after">
+                    <field name="reference"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_reference_followbox_tree">
+            <field name="name">poweremail.mailbox.reference.followboxtree</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_followbox_tree"/>
+            <field name="arch" type="xml">
+                <field name="create_date" position="after">
+                    <field name="reference"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_reference_trashbox_tree">
+            <field name="name">poweremail.mailbox.reference.trashboxtree</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_trashbox_tree"/>
+            <field name="arch" type="xml">
+                <field name="create_date" position="after">
+                    <field name="reference"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="poweremail_reference_errorbox_tree">
+            <field name="name">poweremail.mailbox.reference.errorboxtree</field>
+            <field name="model">poweremail.mailbox</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="poweremail.poweremail_errorbox_tree"/>
+            <field name="arch" type="xml">
+                <field name="create_date" position="after">
+                    <field name="reference"/>
+                </field>
+            </field>
+        </record>
 	</data>
 </openerp>
